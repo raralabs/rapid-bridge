@@ -5,6 +5,7 @@ const RequestId = "request_id"
 const From = "X-Source-Slug"
 const To = "X-Destination-Slug"
 const RapidUrl = "X-Rapid-Url"
+const KeyVersion = "X-Key-Version"
 
 const Application = "application"
 const ApplicationUlid = "application_ulid"

@@ -22,9 +22,9 @@ func APIContractMiddleware() echo.MiddlewareFunc {
 			if to == "" {
 				return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%s not found in header", constants.To))
 			}
-			rapidUrl, _ := reqCtx.Value(constants.RapidUrl).(string)
-			if rapidUrl == "" {
-				return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%s not found in header", constants.RapidUrl))
+			keyVersion, _ := reqCtx.Value(constants.KeyVersion).(string)
+			if keyVersion == "" {
+				return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("%s not found in header", constants.KeyVersion))
 			}
 
 			err := next(c)

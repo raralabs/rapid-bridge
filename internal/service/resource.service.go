@@ -27,7 +27,11 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 
 	ctx := util.GetReqCtxFromEchoCtx(c)
 
-	rsaPrivateKeyPath := util.GetRSAPrivateKeyPath(request.From, request.KeyVersion, "")
+	from := ctx.Value(constants.From).(string)
+	to := ctx.Value(constants.To).(string)
+	keyVersion := ctx.Value(constants.KeyVersion).(string)
+
+	rsaPrivateKeyPath := util.GetRSAPrivateKeyPath(from, keyVersion, "")
 	rsaPrivateKey, err := r.loader.LoadPrivateKey(rsaPrivateKeyPath)
 
 	if err != nil {
@@ -35,63 +39,26 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 		return application.ResourceResponse{}, err
 	}
 
-	ed25519PrivateKey, err := r.loader.LoadPrivateKey(util.GetEd25519PrivateKeyPath(request.From, request.KeyVersion, ""))
+	ed25519PrivateKey, err := r.loader.LoadPrivateKey(util.GetEd25519PrivateKeyPath(from, keyVersion, ""))
 
 	if err != nil {
 		r.logger.Error("Failed to read private keys", zap.String("error", err.Error()))
 		return application.ResourceResponse{}, err
 	}
 
-	bankRsaPublicKey, err := r.loader.LoadPublicKey(util.GetBankRSAPublicKeyPath(request.To))
+	bankRsaPublicKey, err := r.loader.LoadPublicKey(util.GetBankRSAPublicKeyPath(to))
 
 	if err != nil {
 		r.logger.Error("Failed to read public keys", zap.String("error", err.Error()))
 		return application.ResourceResponse{}, err
 	}
 
-	bankEdPublicKey, err := r.loader.LoadPublicKey(util.GetBankEd25519PublicKeyPath(request.To))
+	bankEdPublicKey, err := r.loader.LoadPublicKey(util.GetBankEd25519PublicKeyPath(to))
 
 	if err != nil {
 		r.logger.Error("Failed to read public keys", zap.String("error", err.Error()))
 		return application.ResourceResponse{}, err
 	}
-
-	// TODO: Handle key loading and saving it to config (in-memory) in server startup
-	// // read public keys of bank from config file
-	// bankRsaPublicKey, err := security.LoadPublicKey(r.config.BankDetails.RSAPublicKeyPath)
-	// if err != nil {
-	// 	r.logger.Error("Failed to read public keys", zap.String("error", err.Error()))
-	// 	return application.ResourceResponse{}, err
-	// }
-
-	// // read private keys of application from config file
-	// appEdPrivateKey, err := security.LoadPrivateKey(r.config.ApplicationDetails.Ed25519PrivateKeyPath)
-	// if err != nil {
-	// 	r.logger.Error("Failed to read private keys", zap.String("error", err.Error()))
-	// 	return application.ResourceResponse{}, err
-	// }
-
-	// // read private keys of application from config file
-	// appRsaPrivateKey, err := security.LoadPrivateKey(r.config.ApplicationDetails.RSAPrivateKeyPath)
-	// if err != nil {
-	// 	r.logger.Error("Failed to read private keys", zap.String("error", err.Error()))
-	// 	return application.ResourceResponse{}, err
-	// }
-
-	// // read bank public key from config file
-	// bankEd25519PublicKey, err := security.LoadPublicKey(r.config.BankDetails.Ed25519PublicKeyPath)
-	// if err != nil {
-	// 	r.logger.Error("Failed to read public keys", zap.String("error", err.Error()))
-	// 	return application.ResourceResponse{}, err
-	// }
-
-	// // get public key of bank
-	// bankEncryptionKey := bankRsaPublicKey.(*rsa.PublicKey)
-	// bankSigningKey := bankEd25519PublicKey.(ed25519.PublicKey)
-
-	// // get private key of application
-	// applicationRSAPrivateKey := appRsaPrivateKey.(*rsa.PrivateKey)
-	// applicationEd25519PrivateKey := appEdPrivateKey.(ed25519.PrivateKey)
 
 	// convert request struct to bytes
 	data, err := json.Marshal(request)
@@ -122,7 +89,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 		To:         ctx.Value(constants.To).(string),
 		Message:    base64EncryptedPayload,
 		Signature:  signature,
-		KeyVersion: request.KeyVersion,
+		KeyVersion: keyVersion,
 	}
 
 	// send rapid resource request to rapid links

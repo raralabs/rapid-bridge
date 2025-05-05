@@ -40,11 +40,6 @@ func StartServer() {
 
 	route.SetupRoutes(e, app)
 
-	// // call rapid url to sync public keys of bank and application
-	// rapidResourceService := service.NewRapidResourceService(app)
-	// rapidResourceService.SyncApplicationPublicKeys()
-	// rapidResourceService.SyncBankPublicKeys()
-
-	app.Logger.Info("Server started successfully", app.Config.GetRapidLinksUrl())
+	app.Logger.Info("Server started successfully")
 	e.Start(":8080")
 }
