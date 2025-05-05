@@ -17,6 +17,8 @@ import (
 
 var bankSlug string
 
+var rapidUrl string
+
 var initBankCmd = &cobra.Command{
 	Use:   "bank",
 	Short: "Initialize bank configuration",
@@ -64,7 +66,7 @@ var initBankCmd = &cobra.Command{
 			http_client := httpclient.NewHttpClient(app.Logger)
 			keyService := service.NewKeyService(keymanagementfs.NewFSKeyLoader(), keymanagementfs.NewFSKeyConverter(), keymanagementfs.NewFSKeySaver(), http_client, app.Logger, app.Config)
 			keyHandler := handler.NewKeyHandler(keyService)
-			if err := keyHandler.HandleBankFetchKeys(bankSlug); err != nil {
+			if err := keyHandler.HandleBankFetchKeys(rapidUrl, bankSlug); err != nil {
 				app.Logger.Error("Error while fetching bank public keys", zap.String("error", err.Error()))
 				return
 			}
@@ -113,4 +115,7 @@ var initBankCmd = &cobra.Command{
 func init() {
 	initBankCmd.Flags().StringVar(&bankSlug, "slug", "", "Bank slug identifier (required)")
 	initBankCmd.MarkFlagRequired("slug")
+
+	initBankCmd.Flags().StringVar(&rapidUrl, "rapidUrl", "", "Rapid URL (required)")
+	initBankCmd.MarkFlagRequired("rapidUrl")
 }

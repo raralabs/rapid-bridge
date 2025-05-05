@@ -14,7 +14,6 @@ import (
 
 type CLIConfig struct {
 	RapidLinks         RapidLinks              `mapstructure:",squash"`
-	Rapid              Rapid                   `mapstructure:",squash"`
 	ApplicationDetails port.ApplicationDetails `json:"application"`
 	BankDetails        BankDetails             `json:"bank"`
 
@@ -24,7 +23,6 @@ type CLIConfig struct {
 
 type FlatCLIConfig struct {
 	RapidLinksURL          string   `json:"rapid_links_url"`
-	RapidURL               string   `json:"rapid_url"`
 	RegisteredApplications []string `json:"registered_applications"`
 	RegisteredBanks        []string `json:"registered_banks"`
 	ApplicationKeyVersion  string   `json:"application_key_version"`
@@ -38,10 +36,6 @@ type FlatCLIConfig struct {
 
 type FileConfigAdapter struct {
 	CLIConfig
-}
-
-func (f *FileConfigAdapter) GetRapidUrl() string {
-	return f.CLIConfig.Rapid.Url
 }
 
 func (f *FileConfigAdapter) GetRapidLinksUrl() string {
@@ -175,7 +169,6 @@ func (f *FileConfigAdapter) SaveConfigToFile() error {
 	var flatCliConfig FlatCLIConfig
 
 	flatCliConfig.RapidLinksURL = f.CLIConfig.RapidLinks.Url
-	flatCliConfig.RapidURL = f.CLIConfig.Rapid.Url
 	flatCliConfig.RegisteredApplications = f.CLIConfig.RegisteredApplications
 	flatCliConfig.RegisteredBanks = f.CLIConfig.RegisteredBanks
 

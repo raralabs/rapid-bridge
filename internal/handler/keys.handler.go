@@ -22,8 +22,8 @@ func (k *KeyHandler) HandleBankExistingKeys(bankSlug, rsaPublicKeyPath, ed25519P
 	return k.Service.UseExistingBankKeys(bankSlug, rsaPublicKeyPath, ed25519PublicKeyPath)
 }
 
-func (k *KeyHandler) HandleBankFetchKeys(bankSlug string) error {
-	return k.Service.FetchAndSaveBankKeys(bankSlug)
+func (k *KeyHandler) HandleBankFetchKeys(rapidUrl, bankSlug string) error {
+	return k.Service.FetchAndSaveBankKeys(rapidUrl, bankSlug)
 }
 
 func NewKeyHandler(service *service.KeyService) *KeyHandler {

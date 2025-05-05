@@ -163,9 +163,9 @@ func (k *KeyService) UseExistingBankKeys(bankSlug string, rsaPublicKeyPath, ed25
 	return nil
 }
 
-func (k *KeyService) FetchAndSaveBankKeys(bankSlug string) error {
+func (k *KeyService) FetchAndSaveBankKeys(rapidUrl, bankSlug string) error {
 	k.Logger.Info("Fetching bank's rsa and ed25519 public key from rapid")
-	bankRSAPublicKey, bankED25519PublicKey, err := k.FetchBankPublicKeys()
+	bankRSAPublicKey, bankED25519PublicKey, err := k.FetchBankPublicKeys(rapidUrl)
 	if err != nil {
 		k.Logger.Error("Error while fetching public keys of bank", zap.String("error", err.Error()))
 		return err
@@ -202,8 +202,7 @@ func (k *KeyService) FetchAndSaveBankKeys(bankSlug string) error {
 	return nil
 }
 
-func (k *KeyService) FetchBankPublicKeys() (string, string, error) {
-	rapidUrl := k.Config.GetRapidUrl()
+func (k *KeyService) FetchBankPublicKeys(rapidUrl string) (string, string, error) {
 	pubKeyResponse, err := k.HttpClient.GET(rapidUrl+"/public-key", map[string]string{}, map[string]string{})
 	if err != nil {
 		k.Logger.Error("Failed to get public keys", zap.String("error", err.Error()))

@@ -14,10 +14,6 @@ type RapidLinks struct {
 	Url string `mapstructure:"rapid_links_url"`
 }
 
-type Rapid struct {
-	Url string `mapstructure:"rapid_url"`
-}
-
 type ApplicationDetails struct {
 	// for reading keys if file path specified
 	RSAPrivateKeyPath     string `json:"rsa_private_key_path"`
@@ -53,7 +49,6 @@ type ServerConfig struct {
 	RapidLinks         RapidLinks
 	ApplicationDetails ApplicationDetails
 	BankDetails        BankDetails
-	Rapid              Rapid
 }
 
 type ServerConfigAdapter struct {
@@ -87,11 +82,6 @@ func LoadServerConfig() (port.ServerConfig, error) {
 	cfg := ServerConfig{
 		RapidLinks: RapidLinks{
 			Url: v.GetString("rapid_links_url"),
-		},
-
-		// TODO: Read keys from specified paths and save them in memory
-		Rapid: Rapid{
-			Url: v.GetString("rapid_url"),
 		},
 	}
 	serverConfig := &ServerConfigAdapter{ServerConfig: cfg}

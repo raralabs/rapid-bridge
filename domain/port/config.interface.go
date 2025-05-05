@@ -39,7 +39,6 @@ type CLIConfig interface {
 	GetBankSlug(key string) string
 	GetRegisteredBanks() []string
 	GetRegisteredApplications() []string
-	GetRapidUrl() string
 	GetRapidLinksUrl() string
 	GetBankKeysPaths() (rsaPublicKeyPath string, ed25519PublicKeyPath string)
 
