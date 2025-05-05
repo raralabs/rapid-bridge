@@ -94,8 +94,6 @@ var initBankCmd = &cobra.Command{
 			app.Logger.Info("Invalid choice")
 		}
 
-		// update config and save to core.json
-
 		app.Config.AddRegisteredBanks(bankSlug)
 		app.Config.AddBankDetails(bankSlug)
 

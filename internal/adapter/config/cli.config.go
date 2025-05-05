@@ -64,10 +64,6 @@ func (f *FileConfigAdapter) GetApplicationDetails(applicationSlug string) *port.
 
 func (f *FileConfigAdapter) AddApplicationDetails(applicationSlug string) {
 	f.CLIConfig.ApplicationDetails.Slug = applicationSlug
-	// f.CLIConfig.ApplicationDetails.RSAPrivateKeyPath = util.GetRSAPrivateKeyPath(applicationSlug, "")
-	// f.CLIConfig.ApplicationDetails.RSAPublicKeyPath = util.GetRSAPublicKeyPath(applicationSlug, "")
-	// f.CLIConfig.ApplicationDetails.Ed25519PrivateKeyPath = util.GetEd25519PrivateKeyPath(applicationSlug, "")
-	// f.CLIConfig.ApplicationDetails.Ed25519PublicKeyPath = util.GetEd25519PublicKeyPath(applicationSlug, "")
 }
 
 func (f *FileConfigAdapter) AddApplicationUlid(ulid string) {

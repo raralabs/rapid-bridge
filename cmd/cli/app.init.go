@@ -132,7 +132,6 @@ var initAppCmd = &cobra.Command{
 		}
 
 		app.Config.AddApplicationDetails(applicationSlug)
-		// update config and save to core.json
 		app.Config.AddApplicationKeysPaths(constants.RapidBridgeData+"/application/"+applicationSlug+"/"+ulid+"/rsa_public_key.pem", constants.RapidBridgeData+"/application/"+applicationSlug+"/"+ulid+"/rsa_private_key.pem", constants.RapidBridgeData+"/application/"+applicationSlug+"/"+ulid+"/ed25519_public_key.pem", constants.RapidBridgeData+"/application/"+applicationSlug+"/"+ulid+"/ed25519_private_key.pem")
 		app.Config.AddKeysValidityPeriod(encryptionKeyValidityPeriod, signingKeyValidityPeriod)
 

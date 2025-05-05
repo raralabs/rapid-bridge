@@ -26,8 +26,6 @@ func SendRequestToRapidLinks(logger port.Logger, rapidLinksUrl string, urlPath s
 		return response, err
 	}
 
-	// req.Header = req.Header.Clone()
-	// req.Header.Set("Content-Type", "application/json")
 	for name, values := range header {
 		for _, value := range values {
 			req.Header.Add(name, value)
@@ -42,18 +40,6 @@ func SendRequestToRapidLinks(logger port.Logger, rapidLinksUrl string, urlPath s
 		return response, err
 	}
 	defer resp.Body.Close()
-
-	// if resp.StatusCode != http.StatusOK {
-	// 	logger.Info("Request send to rapid links: Invalid response from rapid-links", zap.String("status", resp.Status))
-	// 	responseBodyBytes, err := io.ReadAll(resp.Body)
-	// 	if err != nil {
-	// 		logger.Error("Request send to rapid links: Error while reading the response body", zap.String("error", err.Error()))
-	// 		return response, err
-	// 	}
-	// 	responseBodyString := string(responseBodyBytes)
-	// 	logger.Error("Request send to rapid links: Invalid response from rapid-links", zap.String("response", responseBodyString))
-	// 	return response, errors.NewRapidLinksError(responseBodyString, resp.StatusCode)
-	// }
 
 	logger.Info("Successfully called to Rapid Links", zap.String("url", rapidLinksUrl+urlPath))
 
