@@ -4,6 +4,7 @@ import (
 	"crypto/ed25519"
 	"crypto/rsa"
 	"fmt"
+	"rapid-bridge/constants"
 	"rapid-bridge/domain/keys"
 	"rapid-bridge/domain/port"
 	hybridcrypto "rapid-bridge/pkg/security/crypto"
@@ -38,7 +39,7 @@ type KeyService struct {
 }
 
 func (k *KeyService) GenerateAndSaveApplicationKeys(applicationSlug, ulid string) error {
-	rsaPrivateKey, rsaPublicKey, err := hybridcrypto.GenerateRSAKeyPair(4096)
+	rsaPrivateKey, rsaPublicKey, err := hybridcrypto.GenerateRSAKeyPair(constants.RSAKeyBitSize)
 	if err != nil {
 		k.Logger.Error("Error while generating rsa key pair", zap.String("error", err.Error()))
 		return err

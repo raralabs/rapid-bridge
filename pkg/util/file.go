@@ -20,39 +20,39 @@ func FileExists(path string) bool {
 
 func GetRSAPrivateKeyPath(applicationSlug, newUlid, rsaPrivateKeyPath string) string {
 	if rsaPrivateKeyPath == "" {
-		rsaPrivateKeyPath = filepath.Join(constants.RapidBridgeData, "application", applicationSlug, newUlid, constants.RSAPrivateKeyFile)
+		rsaPrivateKeyPath = filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug, newUlid, constants.RSAPrivateKeyFile)
 	}
 	return rsaPrivateKeyPath
 }
 
 func GetRSAPublicKeyPath(applicationSlug, newUlid, rsaPublicKeyPath string) string {
 	if rsaPublicKeyPath == "" {
-		rsaPublicKeyPath = filepath.Join(constants.RapidBridgeData, "application", applicationSlug, newUlid, constants.RSAPublicKeyFile)
+		rsaPublicKeyPath = filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug, newUlid, constants.RSAPublicKeyFile)
 	}
 	return rsaPublicKeyPath
 }
 
 func GetEd25519PrivateKeyPath(applicationSlug, newUlid, ed25519PrivateKeyPath string) string {
 	if ed25519PrivateKeyPath == "" {
-		ed25519PrivateKeyPath = filepath.Join(constants.RapidBridgeData, "application", applicationSlug, newUlid, constants.Ed25519PrivateKeyFile)
+		ed25519PrivateKeyPath = filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug, newUlid, constants.Ed25519PrivateKeyFile)
 	}
 	return ed25519PrivateKeyPath
 }
 
 func GetEd25519PublicKeyPath(applicationSlug, newUlid, ed25519PublicKeyPath string) string {
 	if ed25519PublicKeyPath == "" {
-		ed25519PublicKeyPath = filepath.Join(constants.RapidBridgeData, "application", applicationSlug, newUlid, constants.Ed25519PublicKeyFile)
+		ed25519PublicKeyPath = filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug, newUlid, constants.Ed25519PublicKeyFile)
 	}
 	return ed25519PublicKeyPath
 }
 
 func GetBankRSAPublicKeyPath(bankSlug string) string {
-	return filepath.Join(constants.RapidBridgeData, "bank", bankSlug, constants.RSAPublicKeyFile)
+	return filepath.Join(constants.RapidBridgeData, constants.Bank, bankSlug, constants.RSAPublicKeyFile)
 
 }
 
 func GetBankEd25519PublicKeyPath(bankSlug string) string {
-	return filepath.Join(constants.RapidBridgeData, "bank", bankSlug, constants.Ed25519PublicKeyFile)
+	return filepath.Join(constants.RapidBridgeData, constants.Bank, bankSlug, constants.Ed25519PublicKeyFile)
 }
 
 func GenerateULID() ulid.ULID {

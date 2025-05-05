@@ -8,8 +8,28 @@ import (
 
 type ServerConfig interface {
 	GetRapidLinksUrl() string
-	GetBankPublicKeys() (*rsa.PublicKey, ed25519.PublicKey)
-	GetApplicationPrivateKeys() (*rsa.PrivateKey, ed25519.PrivateKey)
+}
+
+type CLIConfig interface {
+	GetRegisteredBanks() []string
+	GetRegisteredApplications() []string
+
+	GetApplicationDetails(applicationSlug string) *CLIApplicationDetails
+
+	AddBankSlug(bankSlug string)
+	AddRegisteredBanks(bankSlug string)
+	AddBankKeysPaths(rsaPublicKeyPath string, ed25519PublicKeyPath string)
+
+	AddRegisteredApplications(applicationSlug string)
+	AddApplicationSlug(applicationSlug string)
+	AddApplicationUlid(ulid string)
+	AddApplicationKeysPaths(rsaPrivateKeyPath string, rsaPublicKeyPath string, ed25519PrivateKeyPath string, ed25519PublicKeyPath string)
+	AddKeysValidityPeriod(encryptionKeyValidityPeriod, signingKeyValidityPeriod int)
+
+	SaveApplicationConfigToFile(applicationSlug string, ulid string, rsaPrivateKeyPath, rsaPublicKeyPath, ed25519PrivateKeyPath, ed25519PublicKeyPath string) error
+	SaveBankConfigToFile(bankSlug string, rsaPublicKeyPath, ed25519PublicKeyPath string) error
+
+	SaveConfigToFile() error
 }
 
 type ApplicationDetails struct {
@@ -35,27 +55,17 @@ type ApplicationDetails struct {
 	ServerAddress string `json:"server_address,omitempty"`
 }
 
-type CLIConfig interface {
-	GetBankSlug(key string) string
-	GetRegisteredBanks() []string
-	GetRegisteredApplications() []string
-	GetRapidLinksUrl() string
-	GetBankKeysPaths() (rsaPublicKeyPath string, ed25519PublicKeyPath string)
+type CLIApplicationDetails struct {
+	RSAPrivateKeyPath     string `json:"rsa_private_key_path" mapstructure:"rsa_private_key_path"`
+	RSAPublicKeyPath      string `json:"rsa_public_key_path" mapstructure:"rsa_public_key_path"`
+	Ed25519PrivateKeyPath string `json:"ed25519_private_key_path" mapstructure:"ed25519_private_key_path"`
+	Ed25519PublicKeyPath  string `json:"ed25519_public_key_path" mapstructure:"ed25519_public_key_path"`
 
-	GetApplicationDetails(applicationSlug string) *ApplicationDetails
+	// Keys expiry / validity
+	RSAKeysValidUntil time.Time `json:"rsa_keys_valid_until" mapstructure:"rsa_keys_valid_until"`
 
-	AddBankDetails(bankSlug string)
-	AddRegisteredBanks(bankSlug string)
-	AddBankKeysPaths(rsaPublicKeyPath string, ed25519PublicKeyPath string)
+	Ed25519KeysValidUntil time.Time `json:"ed25519_keys_valid_until" mapstructure:"ed25519_keys_valid_until"`
 
-	AddRegisteredApplications(applicationSlug string)
-	AddApplicationDetails(applicationSlug string)
-	AddApplicationUlid(ulid string)
-	AddApplicationKeysPaths(rsaPrivateKeyPath string, rsaPublicKeyPath string, ed25519PrivateKeyPath string, ed25519PublicKeyPath string)
-	AddKeysValidityPeriod(encryptionKeyValidityPeriod, signingKeyValidityPeriod int)
-
-	SaveApplicationConfigToFile(applicationSlug string, ulid string, rsaPrivateKeyPath, rsaPublicKeyPath, ed25519PrivateKeyPath, ed25519PublicKeyPath string) error
-	SaveBankConfigToFile(bankSlug string, rsaPublicKeyPath, ed25519PublicKeyPath string) error
-
-	SaveConfigToFile() error
+	Slug       string `json:"slug" mapstructure:"slug"`
+	KeyVersion string `json:"key_version" mapstructure:"key_version"`
 }

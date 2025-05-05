@@ -13,9 +13,9 @@ import (
 )
 
 type CLIConfig struct {
-	RapidLinks         RapidLinks              `mapstructure:",squash"`
-	ApplicationDetails port.ApplicationDetails `json:"application"`
-	BankDetails        BankDetails             `json:"bank"`
+	RapidLinks         RapidLinks                 `mapstructure:",squash"`
+	ApplicationDetails port.CLIApplicationDetails `json:"application"`
+	BankDetails        BankDetails                `json:"bank"`
 
 	RegisteredApplications []string `mapstructure:"registered_applications"`
 	RegisteredBanks        []string `mapstructure:"registered_banks"`
@@ -25,25 +25,10 @@ type FlatCLIConfig struct {
 	RapidLinksURL          string   `json:"rapid_links_url"`
 	RegisteredApplications []string `json:"registered_applications"`
 	RegisteredBanks        []string `json:"registered_banks"`
-	ApplicationKeyVersion  string   `json:"application_key_version"`
-
-	ApplicationRSAPrivateKeyPath     string `json:"application_rsa_private_key_path"`
-	ApplicationEd25519PrivateKeyPath string `json:"application_ed25519_private_key_path"`
-
-	BankRSAPublicKeyPath     string `json:"bank_rsa_public_key_path"`
-	BankEd25519PublicKeyPath string `json:"bank_ed25519_public_key_path"`
 }
 
 type FileConfigAdapter struct {
 	CLIConfig
-}
-
-func (f *FileConfigAdapter) GetRapidLinksUrl() string {
-	return f.CLIConfig.RapidLinks.Url
-}
-
-func (f *FileConfigAdapter) GetBankSlug(key string) string {
-	return f.CLIConfig.BankDetails.Slug
 }
 
 func (f *FileConfigAdapter) GetRegisteredBanks() []string {
@@ -54,15 +39,11 @@ func (f *FileConfigAdapter) GetRegisteredApplications() []string {
 	return f.CLIConfig.RegisteredApplications
 }
 
-func (f *FileConfigAdapter) GetBankKeysPaths() (rsaPublicKeyPath string, ed25519PublicKeyPath string) {
-	return f.CLIConfig.BankDetails.RSAPublicKeyPath, f.CLIConfig.BankDetails.Ed25519PublicKeyPath
-}
-
-func (f *FileConfigAdapter) GetApplicationDetails(applicationSlug string) *port.ApplicationDetails {
+func (f *FileConfigAdapter) GetApplicationDetails(applicationSlug string) *port.CLIApplicationDetails {
 	return &f.CLIConfig.ApplicationDetails
 }
 
-func (f *FileConfigAdapter) AddApplicationDetails(applicationSlug string) {
+func (f *FileConfigAdapter) AddApplicationSlug(applicationSlug string) {
 	f.CLIConfig.ApplicationDetails.Slug = applicationSlug
 }
 
@@ -86,7 +67,7 @@ func (f *FileConfigAdapter) AddKeysValidityPeriod(encryptionKeyValidityPeriod, s
 	f.CLIConfig.ApplicationDetails.Ed25519KeysValidUntil = time.Now().AddDate(0, 0, signingKeyValidityPeriod)
 }
 
-func (f *FileConfigAdapter) AddBankDetails(bankSlug string) {
+func (f *FileConfigAdapter) AddBankSlug(bankSlug string) {
 	f.CLIConfig.BankDetails.Slug = bankSlug
 }
 
@@ -100,7 +81,7 @@ func (f *FileConfigAdapter) AddBankKeysPaths(rsaPublicKeyPath string, ed25519Pub
 }
 
 func (f *FileConfigAdapter) SaveApplicationConfigToFile(applicationSlug string, newUlid string, rsaPrivateKeyPath, rsaPublicKeyPath, ed25519PrivateKeyPath, ed25519PublicKeyPath string) error {
-	folderPath := filepath.Join(constants.RapidBridgeData, "application", applicationSlug)
+	folderPath := filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug)
 	filePath := filepath.Join(folderPath, applicationSlug+".json")
 
 	// create folder
@@ -132,7 +113,7 @@ func (f *FileConfigAdapter) SaveApplicationConfigToFile(applicationSlug string, 
 
 func (f *FileConfigAdapter) SaveBankConfigToFile(bankSlug string, rsaPublicKeyPath, ed25519PublicKeyPath string) error {
 
-	folderPath := filepath.Join(constants.RapidBridgeData, "bank", bankSlug)
+	folderPath := filepath.Join(constants.RapidBridgeData, constants.Bank, bankSlug)
 	filePath := filepath.Join(folderPath, bankSlug+".json")
 
 	// create folder
@@ -168,12 +149,6 @@ func (f *FileConfigAdapter) SaveConfigToFile() error {
 	flatCliConfig.RegisteredApplications = f.CLIConfig.RegisteredApplications
 	flatCliConfig.RegisteredBanks = f.CLIConfig.RegisteredBanks
 
-	flatCliConfig.ApplicationEd25519PrivateKeyPath = f.CLIConfig.ApplicationDetails.Ed25519PrivateKeyPath
-	flatCliConfig.ApplicationRSAPrivateKeyPath = f.CLIConfig.ApplicationDetails.RSAPrivateKeyPath
-
-	flatCliConfig.BankEd25519PublicKeyPath = f.CLIConfig.BankDetails.Ed25519PublicKeyPath
-	flatCliConfig.BankRSAPublicKeyPath = f.CLIConfig.BankDetails.RSAPublicKeyPath
-
 	data, err := json.MarshalIndent(flatCliConfig, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal config: %w", err)
@@ -206,7 +181,7 @@ func LoadCLIConfig() (port.CLIConfig, error) {
 }
 
 func LoadApplicationSpecificConfig(applicationSlug string) port.ApplicationDetails {
-	configPath := filepath.Join(constants.RapidBridgeData, "application", applicationSlug, applicationSlug+".json")
+	configPath := filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug, applicationSlug+".json")
 
 	configData, err := os.ReadFile(configPath)
 	if err != nil {

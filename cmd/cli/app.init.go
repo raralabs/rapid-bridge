@@ -131,7 +131,7 @@ var initAppCmd = &cobra.Command{
 			app.Config.AddRegisteredApplications(applicationSlug)
 		}
 
-		app.Config.AddApplicationDetails(applicationSlug)
+		app.Config.AddApplicationSlug(applicationSlug)
 		app.Config.AddApplicationKeysPaths(constants.RapidBridgeData+"/application/"+applicationSlug+"/"+ulid+"/rsa_public_key.pem", constants.RapidBridgeData+"/application/"+applicationSlug+"/"+ulid+"/rsa_private_key.pem", constants.RapidBridgeData+"/application/"+applicationSlug+"/"+ulid+"/ed25519_public_key.pem", constants.RapidBridgeData+"/application/"+applicationSlug+"/"+ulid+"/ed25519_private_key.pem")
 		app.Config.AddKeysValidityPeriod(encryptionKeyValidityPeriod, signingKeyValidityPeriod)
 

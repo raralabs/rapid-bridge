@@ -95,7 +95,7 @@ var initBankCmd = &cobra.Command{
 		}
 
 		app.Config.AddRegisteredBanks(bankSlug)
-		app.Config.AddBankDetails(bankSlug)
+		app.Config.AddBankSlug(bankSlug)
 
 		app.Config.AddBankKeysPaths(constants.RapidBridgeData+"/bank/"+bankSlug+"/rsa_public_key.pem", constants.RapidBridgeData+"/bank/"+bankSlug+"/ed25519_public_key.pem")
 

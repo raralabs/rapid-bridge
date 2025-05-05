@@ -59,14 +59,6 @@ func (s *ServerConfigAdapter) GetRapidLinksUrl() string {
 	return s.ServerConfig.RapidLinks.Url
 }
 
-func (s *ServerConfigAdapter) GetBankPublicKeys() (*rsa.PublicKey, ed25519.PublicKey) {
-	return s.BankDetails.RSAPublicKey, s.BankDetails.Ed25519PublicKey
-}
-
-func (s *ServerConfigAdapter) GetApplicationPrivateKeys() (*rsa.PrivateKey, ed25519.PrivateKey) {
-	return s.ApplicationDetails.RSAPrivateKey, s.ApplicationDetails.Ed25519PrivateKey
-}
-
 func LoadServerConfig() (port.ServerConfig, error) {
 
 	v := viper.New()

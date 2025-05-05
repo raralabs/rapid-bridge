@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"rapid-bridge/constants"
 )
 
 func ReadAndValidateKeyFile(path string, isPrivate bool) (any, error) {
@@ -50,7 +51,7 @@ func validatePrivateKey(privateKey any) error {
 
 	switch k := privateKey.(type) {
 	case *rsa.PrivateKey:
-		if k.N.BitLen() != 4096 {
+		if k.N.BitLen() != constants.RSAKeyBitSize {
 			return fmt.Errorf("RSA key too short: %d bits", k.N.BitLen())
 		}
 		return nil
@@ -68,7 +69,7 @@ func validatePublicKey(publicKey any) error {
 
 	switch key := publicKey.(type) {
 	case *rsa.PublicKey:
-		if key.N.BitLen() != 4096 {
+		if key.N.BitLen() != constants.RSAKeyBitSize {
 			return fmt.Errorf("RSA public key too short: %d bits", key.N.BitLen())
 		}
 		return nil

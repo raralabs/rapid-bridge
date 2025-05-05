@@ -100,7 +100,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 		return application.ResourceResponse{}, err
 	}
 
-	r.logger.Info("Message from rapid links", rapidResourceResponse)
+	r.logger.Info("Message from rapid links", zap.String("from", rapidResourceResponse.Data.From), zap.String("to", rapidResourceResponse.Data.To))
 
 	// decode message and get ciphertext, encrypted aes key and nonce
 	ciphertext, encryptedAESKey, nonce, err = r.security.DecodeBase64Encrypted(rapidResourceResponse.Data.Message)

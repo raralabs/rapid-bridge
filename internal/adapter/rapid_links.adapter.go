@@ -32,8 +32,6 @@ func SendRequestToRapidLinks(logger port.Logger, rapidLinksUrl string, urlPath s
 		}
 	}
 
-	logger.Info("Request send to rapid links: Request to rapid-links", req.Header)
-
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		logger.Error("Request send to rapid links: Error while sending request to rapid links", zap.String("error", err.Error()))

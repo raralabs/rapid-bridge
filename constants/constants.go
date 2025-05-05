@@ -8,9 +8,13 @@ const RapidUrl = "X-Rapid-Url"
 const KeyVersion = "X-Key-Version"
 
 const Application = "application"
+const Bank = "bank"
+
 const ApplicationUlid = "application_ulid"
 
 const RapidBridgeData = "./_rapid_bridge_data"
+
+const RSAKeyBitSize = 4096
 
 const EncryptionKeyValidityPeriod = 90 // in days
 const SigningKeyValidityPeriod = 365   // in days
