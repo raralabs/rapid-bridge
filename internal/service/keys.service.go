@@ -45,15 +45,13 @@ func (k *KeyService) GenerateAndSaveApplicationKeys(applicationSlug, ulid string
 		return err
 	}
 
-	applicationDetails := k.Config.GetApplicationDetails(applicationSlug)
-
-	err = k.KeySaver.SaveRSAPrivateKeyToPEM(rsaPrivateKey, util.GetRSAPrivateKeyPath(applicationSlug, ulid, applicationDetails.RSAPrivateKeyPath))
+	err = k.KeySaver.SaveRSAPrivateKeyToPEM(rsaPrivateKey, util.GetRSAPrivateKeyPath(applicationSlug, ulid))
 	if err != nil {
 		k.Logger.Error("Error while saving rsa private key to pem", zap.String("error", err.Error()))
 		return err
 	}
 
-	err = k.KeySaver.SaveRSAPublicKeyToPEM(rsaPublicKey, util.GetRSAPublicKeyPath(applicationSlug, ulid, applicationDetails.RSAPublicKeyPath))
+	err = k.KeySaver.SaveRSAPublicKeyToPEM(rsaPublicKey, util.GetRSAPublicKeyPath(applicationSlug, ulid))
 	if err != nil {
 		k.Logger.Error("Error while saving rsa public key to pem", zap.String("error", err.Error()))
 		return err
@@ -65,13 +63,13 @@ func (k *KeyService) GenerateAndSaveApplicationKeys(applicationSlug, ulid string
 		return err
 	}
 
-	err = k.KeySaver.SaveEd25519PrivateKeyToPEM(ed25519PrivateKey, util.GetEd25519PrivateKeyPath(applicationSlug, ulid, applicationDetails.Ed25519PrivateKeyPath))
+	err = k.KeySaver.SaveEd25519PrivateKeyToPEM(ed25519PrivateKey, util.GetEd25519PrivateKeyPath(applicationSlug, ulid))
 	if err != nil {
 		k.Logger.Error("Error while saving ed25519 private key to pem", zap.String("error", err.Error()))
 		return err
 	}
 
-	err = k.KeySaver.SaveEd25519PublicKeyToPEM(ed25519PublicKey, util.GetEd25519PublicKeyPath(applicationSlug, ulid, applicationDetails.Ed25519PublicKeyPath))
+	err = k.KeySaver.SaveEd25519PublicKeyToPEM(ed25519PublicKey, util.GetEd25519PublicKeyPath(applicationSlug, ulid))
 	if err != nil {
 		k.Logger.Error("Error while saving ed25519 public key to pem", zap.String("error", err.Error()))
 		return err
@@ -116,19 +114,19 @@ func (k *KeyService) UseExistingApplicationKeys(applicationSlug, ulid string, rs
 		return err
 	}
 
-	if err := k.KeySaver.SaveRSAPrivateKeyToPEM(rsaPrivateKey.(*rsa.PrivateKey), util.GetRSAPrivateKeyPath(applicationSlug, ulid, "")); err != nil {
+	if err := k.KeySaver.SaveRSAPrivateKeyToPEM(rsaPrivateKey.(*rsa.PrivateKey), util.GetRSAPrivateKeyPath(applicationSlug, ulid)); err != nil {
 		fmt.Println("Error while saving rsa private key to pem file: ", err)
 	}
 
-	if err := k.KeySaver.SaveRSAPublicKeyToPEM(rsaPublicKey.(*rsa.PublicKey), util.GetRSAPublicKeyPath(applicationSlug, ulid, "")); err != nil {
+	if err := k.KeySaver.SaveRSAPublicKeyToPEM(rsaPublicKey.(*rsa.PublicKey), util.GetRSAPublicKeyPath(applicationSlug, ulid)); err != nil {
 		fmt.Println("Error while saving rsa public key to pem file: ", err)
 	}
 
-	if err := k.KeySaver.SaveEd25519PrivateKeyToPEM(ed25519PrivateKey.(ed25519.PrivateKey), util.GetEd25519PrivateKeyPath(applicationSlug, ulid, "")); err != nil {
+	if err := k.KeySaver.SaveEd25519PrivateKeyToPEM(ed25519PrivateKey.(ed25519.PrivateKey), util.GetEd25519PrivateKeyPath(applicationSlug, ulid)); err != nil {
 		fmt.Println("Error while saving ed25519 private key to pem file: ", err)
 	}
 
-	if err := k.KeySaver.SaveEd25519PublicKeyToPEM(ed25519PublicKey.(ed25519.PublicKey), util.GetEd25519PublicKeyPath(applicationSlug, ulid, "")); err != nil {
+	if err := k.KeySaver.SaveEd25519PublicKeyToPEM(ed25519PublicKey.(ed25519.PublicKey), util.GetEd25519PublicKeyPath(applicationSlug, ulid)); err != nil {
 		fmt.Println("Error while saving ed25519 public key to pem file: ", err)
 	}
 

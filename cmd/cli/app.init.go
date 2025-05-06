@@ -4,14 +4,12 @@ import (
 	"context"
 	"fmt"
 	"rapid-bridge/constants"
-	"rapid-bridge/internal/adapter/config"
 	keymanagementfs "rapid-bridge/internal/adapter/keymanagement_fs"
 	keyhandler "rapid-bridge/internal/handler"
 	"rapid-bridge/internal/service"
 	"rapid-bridge/internal/setup"
 	"rapid-bridge/pkg/util"
 	"slices"
-	"time"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -40,12 +38,6 @@ var initAppCmd = &cobra.Command{
 
 		if isApplicationRegistered {
 			fmt.Printf("\nThis application: %s is already registered", applicationSlug)
-
-			applicationConfig := config.LoadApplicationSpecificConfig(applicationSlug)
-			if applicationConfig.RSAKeysValidUntil.After(time.Now()) && applicationConfig.Ed25519KeysValidUntil.After(time.Now()) {
-				fmt.Println("\nYour encryption (RSA) and signing (ED25519) keys are still valid.")
-				// fmt.Println("\nDo you want to rotate your keys? ")
-			}
 
 			fmt.Println("\n\nDo you want to re-initialize the application? \n[1:Yes || 2:No]")
 			fmt.Print("\nEnter your choice: ")
@@ -135,26 +127,15 @@ var initAppCmd = &cobra.Command{
 		app.Config.AddApplicationKeysPaths(constants.RapidBridgeData+"/application/"+applicationSlug+"/"+ulid+"/rsa_public_key.pem", constants.RapidBridgeData+"/application/"+applicationSlug+"/"+ulid+"/rsa_private_key.pem", constants.RapidBridgeData+"/application/"+applicationSlug+"/"+ulid+"/ed25519_public_key.pem", constants.RapidBridgeData+"/application/"+applicationSlug+"/"+ulid+"/ed25519_private_key.pem")
 		app.Config.AddKeysValidityPeriod(encryptionKeyValidityPeriod, signingKeyValidityPeriod)
 
-		fmt.Println("Do you want to use these keys for your subsequent requests? [1:Yes || 2:No]")
-		fmt.Print("Enter your choice: ")
+		app.Config.AddApplicationUlid(ulid)
 
-		var useNewKeys int
-		fmt.Scanln(&useNewKeys)
-
-		if useNewKeys == 2 {
-			fmt.Println("Skipping...")
-		} else if useNewKeys != 1 {
-			fmt.Println("Invalid choice")
-		} else if useNewKeys == 1 {
-			app.Config.AddApplicationUlid(ulid)
-		}
-
-		if err := app.Config.SaveApplicationConfigToFile(applicationSlug, ulid, util.GetRSAPrivateKeyPath(applicationSlug, ulid, rsaPrivateKeyPath), util.GetRSAPublicKeyPath(applicationSlug, ulid, rsaPublicKeyPath), util.GetEd25519PrivateKeyPath(applicationSlug, ulid, ed25519PrivateKeyPath), util.GetEd25519PublicKeyPath(applicationSlug, ulid, ed25519PublicKeyPath)); err != nil {
+		if err := app.Config.SaveApplicationConfigToFile(); err != nil {
 			app.Logger.Error("Error while saving config", zap.String("error", err.Error()))
 			return
 		}
 
-		app.Logger.Info("Application configuration initialized successfully")
+		app.Logger.Info("Application configuration saved successfully")
+
 	},
 }
 

@@ -18,31 +18,23 @@ func FileExists(path string) bool {
 	return !info.IsDir()
 }
 
-func GetRSAPrivateKeyPath(applicationSlug, newUlid, rsaPrivateKeyPath string) string {
-	if rsaPrivateKeyPath == "" {
-		rsaPrivateKeyPath = filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug, newUlid, constants.RSAPrivateKeyFile)
-	}
+func GetRSAPrivateKeyPath(applicationSlug, newUlid string) string {
+	rsaPrivateKeyPath := filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug, newUlid, constants.RSAPrivateKeyFile)
 	return rsaPrivateKeyPath
 }
 
-func GetRSAPublicKeyPath(applicationSlug, newUlid, rsaPublicKeyPath string) string {
-	if rsaPublicKeyPath == "" {
-		rsaPublicKeyPath = filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug, newUlid, constants.RSAPublicKeyFile)
-	}
+func GetRSAPublicKeyPath(applicationSlug, newUlid string) string {
+	rsaPublicKeyPath := filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug, newUlid, constants.RSAPublicKeyFile)
 	return rsaPublicKeyPath
 }
 
-func GetEd25519PrivateKeyPath(applicationSlug, newUlid, ed25519PrivateKeyPath string) string {
-	if ed25519PrivateKeyPath == "" {
-		ed25519PrivateKeyPath = filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug, newUlid, constants.Ed25519PrivateKeyFile)
-	}
+func GetEd25519PrivateKeyPath(applicationSlug, newUlid string) string {
+	ed25519PrivateKeyPath := filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug, newUlid, constants.Ed25519PrivateKeyFile)
 	return ed25519PrivateKeyPath
 }
 
-func GetEd25519PublicKeyPath(applicationSlug, newUlid, ed25519PublicKeyPath string) string {
-	if ed25519PublicKeyPath == "" {
-		ed25519PublicKeyPath = filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug, newUlid, constants.Ed25519PublicKeyFile)
-	}
+func GetEd25519PublicKeyPath(applicationSlug, newUlid string) string {
+	ed25519PublicKeyPath := filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug, newUlid, constants.Ed25519PublicKeyFile)
 	return ed25519PublicKeyPath
 }
 

@@ -80,7 +80,9 @@ func (f *FileConfigAdapter) AddBankKeysPaths(rsaPublicKeyPath string, ed25519Pub
 	f.CLIConfig.BankDetails.Ed25519PublicKeyPath = ed25519PublicKeyPath
 }
 
-func (f *FileConfigAdapter) SaveApplicationConfigToFile(applicationSlug string, newUlid string, rsaPrivateKeyPath, rsaPublicKeyPath, ed25519PrivateKeyPath, ed25519PublicKeyPath string) error {
+func (f *FileConfigAdapter) SaveApplicationConfigToFile() error {
+	applicationSlug := f.CLIConfig.ApplicationDetails.Slug
+
 	folderPath := filepath.Join(constants.RapidBridgeData, constants.Application, applicationSlug)
 	filePath := filepath.Join(folderPath, applicationSlug+".json")
 
@@ -94,24 +96,27 @@ func (f *FileConfigAdapter) SaveApplicationConfigToFile(applicationSlug string, 
 	file, err := os.Create(filePath)
 	if err != nil {
 		fmt.Println("Error creating file:", err)
+		return err
 	}
 	defer file.Close()
 
 	// write to file
-	f.CLIConfig.ApplicationDetails.KeyVersion = newUlid
-
 	dataToWrite, err := json.Marshal(f.CLIConfig.ApplicationDetails)
 	if err != nil {
 		fmt.Println("Error marshalling data", err)
+		return err
 	}
 	if err := os.WriteFile(filePath, dataToWrite, 0644); err != nil {
 		fmt.Println("Error writing to file", err)
+		return err
 	}
 
 	return f.SaveConfigToFile()
 }
 
-func (f *FileConfigAdapter) SaveBankConfigToFile(bankSlug string, rsaPublicKeyPath, ed25519PublicKeyPath string) error {
+func (f *FileConfigAdapter) SaveBankConfigToFile() error {
+
+	bankSlug := f.CLIConfig.BankDetails.Slug
 
 	folderPath := filepath.Join(constants.RapidBridgeData, constants.Bank, bankSlug)
 	filePath := filepath.Join(folderPath, bankSlug+".json")
@@ -126,6 +131,7 @@ func (f *FileConfigAdapter) SaveBankConfigToFile(bankSlug string, rsaPublicKeyPa
 	file, err := os.Create(filePath)
 	if err != nil {
 		fmt.Println("Error creating file:", err)
+		return err
 	}
 	defer file.Close()
 
@@ -133,9 +139,11 @@ func (f *FileConfigAdapter) SaveBankConfigToFile(bankSlug string, rsaPublicKeyPa
 	dataToWrite, err := json.Marshal(f.CLIConfig.BankDetails)
 	if err != nil {
 		fmt.Println("Error marshalling data", err)
+		return err
 	}
 	if err := os.WriteFile(filePath, dataToWrite, 0644); err != nil {
 		fmt.Println("Error writing to file", err)
+		return err
 	}
 
 	return f.SaveConfigToFile()

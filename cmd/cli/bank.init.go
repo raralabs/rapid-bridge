@@ -94,14 +94,17 @@ var initBankCmd = &cobra.Command{
 			app.Logger.Info("Invalid choice")
 		}
 
-		app.Config.AddRegisteredBanks(bankSlug)
+		if !isBankRegistered {
+			app.Config.AddRegisteredBanks(bankSlug)
+		}
+
 		app.Config.AddBankSlug(bankSlug)
 
 		app.Config.AddBankKeysPaths(constants.RapidBridgeData+"/bank/"+bankSlug+"/rsa_public_key.pem", constants.RapidBridgeData+"/bank/"+bankSlug+"/ed25519_public_key.pem")
 
 		// TODO: Create a util function to create a file path without manually appending names to a string
 
-		if err := app.Config.SaveBankConfigToFile(bankSlug, rsaPublicKeyPath, ed25519PublicKeyPath); err != nil {
+		if err := app.Config.SaveBankConfigToFile(); err != nil {
 			app.Logger.Error("Error while saving config to file", zap.String("error", err.Error()))
 			return
 		}

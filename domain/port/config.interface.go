@@ -26,8 +26,8 @@ type CLIConfig interface {
 	AddApplicationKeysPaths(rsaPrivateKeyPath string, rsaPublicKeyPath string, ed25519PrivateKeyPath string, ed25519PublicKeyPath string)
 	AddKeysValidityPeriod(encryptionKeyValidityPeriod, signingKeyValidityPeriod int)
 
-	SaveApplicationConfigToFile(applicationSlug string, ulid string, rsaPrivateKeyPath, rsaPublicKeyPath, ed25519PrivateKeyPath, ed25519PublicKeyPath string) error
-	SaveBankConfigToFile(bankSlug string, rsaPublicKeyPath, ed25519PublicKeyPath string) error
+	SaveApplicationConfigToFile() error
+	SaveBankConfigToFile() error
 
 	SaveConfigToFile() error
 }

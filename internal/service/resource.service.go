@@ -31,7 +31,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	to := ctx.Value(constants.To).(string)
 	keyVersion := ctx.Value(constants.KeyVersion).(string)
 
-	rsaPrivateKeyPath := util.GetRSAPrivateKeyPath(from, keyVersion, "")
+	rsaPrivateKeyPath := util.GetRSAPrivateKeyPath(from, keyVersion)
 	rsaPrivateKey, err := r.loader.LoadPrivateKey(rsaPrivateKeyPath)
 
 	if err != nil {
@@ -39,7 +39,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 		return application.ResourceResponse{}, err
 	}
 
-	ed25519PrivateKey, err := r.loader.LoadPrivateKey(util.GetEd25519PrivateKeyPath(from, keyVersion, ""))
+	ed25519PrivateKey, err := r.loader.LoadPrivateKey(util.GetEd25519PrivateKeyPath(from, keyVersion))
 
 	if err != nil {
 		r.logger.Error("Failed to read private keys", zap.String("error", err.Error()))
