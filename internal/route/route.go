@@ -21,6 +21,17 @@ func SetupRoutes(e *echo.Echo, app *setup.Application) {
 	rapidResource := api.Group("/resource", middleware.APIContractMiddleware())
 	resourceForwardingRoutes(rapidResource, app)
 
+	// Route to register new application in bridge
+	// This is just for playground and not for production
+	cliApp := setup.NewCLIApplication()
+	keyLoader := keymanagementfs.NewFSKeyLoader()
+	keyConverter := keymanagementfs.NewFSKeyConverter()
+	keySaver := keymanagementfs.NewFSKeySaver()
+	keyService := service.NewKeyService(keyLoader, keyConverter, keySaver, nil, cliApp.Logger, cliApp.Config)
+	playgroundService := service.NewPlaygroundService(cliApp.Logger, cliApp, keyLoader, keyConverter, keySaver, keyService)
+	playgroundHandler := handler.NewPlaygroundHandler(cliApp.Logger, playgroundService)
+	api.POST("/application/register", playgroundHandler.HandleApplicationRegister)
+
 }
 
 func resourceForwardingRoutes(resourceRoutes *echo.Group, app *setup.Application) {
