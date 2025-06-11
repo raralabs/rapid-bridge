@@ -210,13 +210,13 @@ func (k *KeyService) FetchBankPublicKeys(rapidUrl string) (string, string, error
 
 	publicKeys := pubKeyResponse.Data["data"].(map[string]interface{})
 
-	bankRsaPublicKey, ok := publicKeys["encryptingKey"].(string)
+	bankRsaPublicKey, ok := publicKeys["rsaPublicKey"].(string)
 	if !ok {
 		k.Logger.Error("Failed to get public keys", zap.String("error", "bank_rsa_public_key not found"))
 		return "", "", errors.NewRapidLinksError("bank_rsa_public_key not found", 500)
 	}
 
-	bankEd25519PublicKey, ok := publicKeys["signingKey"].(string)
+	bankEd25519PublicKey, ok := publicKeys["ed25519PublicKey"].(string)
 	if !ok {
 		k.Logger.Error("Failed to get public keys", zap.String("error", "bank_ed25519_public_key not found"))
 		return "", "", errors.NewRapidLinksError("bank_ed25519_public_key not found", 500)
