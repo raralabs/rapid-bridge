@@ -1,8 +1,6 @@
 package service
 
 import (
-	"crypto/ed25519"
-	"crypto/rsa"
 	"fmt"
 	"rapid-bridge/constants"
 	"rapid-bridge/domain/port"
@@ -16,8 +14,8 @@ import (
 )
 
 type ApplicationDetails struct {
-	RSAPublicKey     *rsa.PublicKey
-	Ed25519PublicKey ed25519.PublicKey
+	RSAPublicKey     string
+	Ed25519PublicKey string
 	KeyVersion       string
 	Slug             string
 }
@@ -54,23 +52,25 @@ func (s *PlaygroundService) getApplicationDetails(applicationSlug string) (Appli
 	// 	return ApplicationDetails{}, err
 	// }
 
-	rsaPublicKey, err := s.keyLoader.LoadPublicKey(applicationDetails.RSAPublicKeyPath)
-
+	rsaPublicKeyBytes, err := util.ReadFile(applicationDetails.RSAPublicKeyPath)
 	if err != nil {
-		s.logger.Error("Failed to read public keys", zap.String("error", err.Error()))
+		s.logger.Error("Failed to read RSA public keys", zap.String("error", err.Error()))
 		return ApplicationDetails{}, err
 	}
 
-	ed25519PublicKey, err := s.keyLoader.LoadPublicKey(applicationDetails.Ed25519PublicKeyPath)
+	rsaPublicKey := string(rsaPublicKeyBytes)
 
+	ed25519PublicKeyBytes, err := util.ReadFile(applicationDetails.Ed25519PublicKeyPath)
 	if err != nil {
-		s.logger.Error("Failed to read public keys", zap.String("error", err.Error()))
+		s.logger.Error("Failed to read ED25519 public keys", zap.String("error", err.Error()))
 		return ApplicationDetails{}, err
 	}
+
+	ed25519PublicKey := string(ed25519PublicKeyBytes)
 
 	return ApplicationDetails{
-		RSAPublicKey:     rsaPublicKey.(*rsa.PublicKey),
-		Ed25519PublicKey: ed25519PublicKey.(ed25519.PublicKey),
+		RSAPublicKey:     rsaPublicKey,
+		Ed25519PublicKey: ed25519PublicKey,
 		KeyVersion:       applicationDetails.KeyVersion,
 		Slug:             applicationSlug,
 	}, nil
@@ -93,7 +93,7 @@ func (s *PlaygroundService) RegisterApplication(request playground.ApplicationRe
 
 		s.app.Config.AddRegisteredApplications(request.Slug)
 		s.app.Config.AddApplicationSlug(request.Slug)
-		s.app.Config.AddApplicationKeysPaths(constants.RapidBridgeData+"/application/"+request.Slug+"/"+ulid+"/rsa_public_key.pem", constants.RapidBridgeData+"/application/"+request.Slug+"/"+ulid+"/rsa_private_key.pem", constants.RapidBridgeData+"/application/"+request.Slug+"/"+ulid+"/ed25519_public_key.pem", constants.RapidBridgeData+"/application/"+request.Slug+"/"+ulid+"/ed25519_private_key.pem")
+		s.app.Config.AddApplicationKeysPaths(constants.RapidBridgeData+"/application/"+request.Slug+"/"+ulid+"/rsa_private_key.pem", constants.RapidBridgeData+"/application/"+request.Slug+"/"+ulid+"/rsa_public_key.pem", constants.RapidBridgeData+"/application/"+request.Slug+"/"+ulid+"/ed25519_private_key.pem", constants.RapidBridgeData+"/application/"+request.Slug+"/"+ulid+"/ed25519_public_key.pem")
 		s.app.Config.AddKeysValidityPeriod(constants.EncryptionKeyValidityPeriod, constants.SigningKeyValidityPeriod)
 		s.app.Config.AddApplicationUlid(ulid)
 

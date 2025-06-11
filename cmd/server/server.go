@@ -1,9 +1,11 @@
 package server
 
 import (
+	"go.uber.org/zap"
 	"net/http"
 	"rapid-bridge/internal/route"
 	"rapid-bridge/internal/setup"
+	"rapid-bridge/pkg/config"
 	"rapid-bridge/pkg/util"
 
 	rmiddleware "rapid-bridge/pkg/middleware"
@@ -27,6 +29,11 @@ func StartServer() {
 	app := setup.NewApplication()
 	defer app.Logger.Sync()
 
+	config, err := config.LoadConfig()
+	if err != nil {
+		app.Logger.Fatal("Failed to load config", zap.Error(err))
+	}
+
 	e := echo.New()
 	e.Validator = util.NewCustomValidator()
 
@@ -41,5 +48,5 @@ func StartServer() {
 	route.SetupRoutes(e, app)
 
 	app.Logger.Info("Server started successfully")
-	e.Start(":8080")
+	e.Start(config.ServerPort)
 }

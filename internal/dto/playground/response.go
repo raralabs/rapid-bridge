@@ -1,15 +1,10 @@
 package playground
 
-import (
-	"crypto/ed25519"
-	"crypto/rsa"
-)
-
 type ApplicationRegisterResponse struct {
 	KeyVersion string `json:"key_version"`
 	Slug       string `json:"slug"`
 
-	RSAPublicKey     *rsa.PublicKey
-	Ed25519PublicKey ed25519.PublicKey
+	RSAPublicKey     string
+	Ed25519PublicKey string
 	Message          string `json:"message"`
 }

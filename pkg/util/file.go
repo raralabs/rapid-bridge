@@ -68,3 +68,7 @@ func CompareULIDs(ulids ...ulid.ULID) ulid.ULID {
 	}
 	return min
 }
+
+func ReadFile(path string) ([]byte, error) {
+	return os.ReadFile(path)
+}
