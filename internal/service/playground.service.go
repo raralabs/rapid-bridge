@@ -9,6 +9,7 @@ import (
 	"rapid-bridge/internal/setup"
 	"rapid-bridge/pkg/util"
 	"slices"
+	"strings"
 
 	"go.uber.org/zap"
 )
@@ -58,7 +59,7 @@ func (s *PlaygroundService) getApplicationDetails(applicationSlug string) (Appli
 		return ApplicationDetails{}, err
 	}
 
-	rsaPublicKey := string(rsaPublicKeyBytes)
+	rsaPublicKey := s.sanitizePublicKey(string(rsaPublicKeyBytes))
 
 	ed25519PublicKeyBytes, err := util.ReadFile(applicationDetails.Ed25519PublicKeyPath)
 	if err != nil {
@@ -66,7 +67,7 @@ func (s *PlaygroundService) getApplicationDetails(applicationSlug string) (Appli
 		return ApplicationDetails{}, err
 	}
 
-	ed25519PublicKey := string(ed25519PublicKeyBytes)
+	ed25519PublicKey := s.sanitizePublicKey(string(ed25519PublicKeyBytes))
 
 	return ApplicationDetails{
 		RSAPublicKey:     rsaPublicKey,
@@ -74,6 +75,30 @@ func (s *PlaygroundService) getApplicationDetails(applicationSlug string) (Appli
 		KeyVersion:       applicationDetails.KeyVersion,
 		Slug:             applicationSlug,
 	}, nil
+}
+
+func (s *PlaygroundService) sanitizePublicKey(pemString string) string {
+	pemString = strings.ReplaceAll(pemString, "-----BEGIN PUBLIC KEY-----", "")
+	pemString = strings.ReplaceAll(pemString, "-----END PUBLIC KEY-----", "")
+	// Split into lines
+	lines := strings.Split(pemString, "\n")
+
+	var result []string
+	result = append(result, "-----BEGIN PUBLIC KEY-----")
+	for i, line := range lines {
+		if strings.HasPrefix(line, "-----BEGIN PUBLIC KEY-----") || strings.HasPrefix(line, "-----END PUBLIC KEY-----") {
+			//result = append(result, line)
+		} else if i > 0 && i < len(lines)-1 {
+			// Collect all base64 lines into one string without newline
+			result = append(result, strings.ReplaceAll(strings.Join(lines[1:len(lines)-1], ""), "\n", ""))
+			break
+		}
+	}
+	result = append(result, "-----END PUBLIC KEY-----")
+
+	// Join the result with newlines
+	output := strings.Join(result, "\n")
+	return output
 }
 
 func (s *PlaygroundService) RegisterApplication(request playground.ApplicationRegisterRequest) (playground.ApplicationRegisterResponse, error) {
