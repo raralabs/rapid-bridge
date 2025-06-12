@@ -1,0 +1,116 @@
+kind: pipeline
+name: Build and Push to rapid-bridge
+type: docker
+
+# platform:
+#   arch: amd64
+#   os: linux
+
+steps:
+  - name: build from rapid-bridge-DEV
+    image: bentolor/docker-dind-awscli:dind
+    environment:
+      github_username:
+        from_secret: GITHUB_USERNAME
+      github_token:
+        from_secret: GITHUB_TOKEN
+      ssh_key:
+        from_secret: rapidDemo_ssh_key
+    commands:
+      - export SSH_PRIVATE_KEY="$ssh_key"
+      - docker compose -f deployment/docker-compose.${DRONE_BRANCH}.yaml build
+      - docker login ghcr.io -u $github_username -p $github_token
+      - docker compose -f deployment/docker-compose.${DRONE_BRANCH}.yaml push || true
+
+    volumes:
+      - name: docker_sock
+        path: /var/run/docker.sock
+
+trigger:
+  branch:
+    - dev
+    - main
+  event:
+    - push
+
+volumes:
+  - name: docker_sock
+    host:
+      path: /var/run/docker.sock
+
+
+
+
+---
+kind: pipeline
+type: ssh
+name: Pull image and deploy for rapid-bridge
+
+server:
+  host:
+    from_secret: rapidlinks-main-be
+  user:
+    from_secret: rapidlinks_main_user
+  ssh_key:
+    from_secret: rapidlinks_ssh_key-main
+
+steps:
+  - name: Deploy from rapid-bridge-DEV
+    environment:
+        github_username:
+          from_secret: GITHUB_USERNAME
+        github_token:
+          from_secret: GITHUB_TOKEN
+    commands:
+      - docker login ghcr.io -u  $github_username -p $github_token
+      - cd /home/rapid/rapid-dev/rapid-bridge
+      - docker compose pull
+      - docker compose down 
+      - docker compose up -d
+      
+
+
+trigger:
+  branch:
+    - dev
+  event:
+    - push
+depends_on:
+  - Build and Push to rapid-bridge
+
+---
+kind: pipeline
+type: ssh
+name: Pull image and deploy for rapid-bridge main
+
+server:
+  host:
+    from_secret: rapidlinks_hostname_be
+  user:
+    from_secret: rapidlinks_host_user
+  ssh_key:
+    from_secret: rapidlinks_ssh_key
+
+steps:
+  - name: Deploy from rapid-bridge-DEV
+    environment:
+        github_username:
+          from_secret: GITHUB_USERNAME
+        github_token:
+          from_secret: GITHUB_TOKEN
+    commands:
+      - docker login ghcr.io -u  $github_username -p $github_token
+      - cd /home/rapid/rapid-main/rapid-bridge
+      - docker compose pull
+      - docker compose down 
+      - docker compose up -d
+      
+
+
+trigger:
+  branch:
+    - main
+  event:
+    - push
+depends_on:
+  - Build and Push to rapid-bridge

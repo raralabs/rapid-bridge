@@ -1,0 +1,19 @@
+services:
+
+
+  rapid-bridge:
+    container_name: rapid-bridge
+    restart: unless-stopped
+    image: ghcr.io/raralabs/rapid-bridge:main
+    build:
+      context: ../
+      dockerfile: deployment/Dockerfile
+    environment:
+      - TZ=Asia/Kathmandu
+    ports:
+      - "8081:8081"
+    networks:
+      - rapid
+
+networks:
+  rapid:
