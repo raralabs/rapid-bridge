@@ -16,7 +16,7 @@ func SetupRoutes(e *echo.Echo, app *setup.Application) {
 
 	swaggerRoutes(e)
 
-	api := e.Group("/api/v1")
+	api := e.Group("/bridge/api/v1")
 
 	rapidResource := api.Group("/resource", middleware.APIContractMiddleware())
 	resourceForwardingRoutes(rapidResource, app)
