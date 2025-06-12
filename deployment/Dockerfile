@@ -42,7 +42,7 @@ RUN apt-get update && \
 
 
 
-COPY  --from=build app/rapid-bridge ./server
+COPY  --from=build /app/rapid-bridge ./rapid-bridge
 
 CMD ["./rapid-bridge", "init", "server"]
 
