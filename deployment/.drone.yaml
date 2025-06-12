@@ -54,6 +54,11 @@ server:
   ssh_key:
     from_secret: rapidlinks_ssh_key-main
 
+
+clone:
+  disable: true
+
+
 steps:
   - name: Deploy from rapid-bridge-DEV
     environment:
@@ -90,6 +95,10 @@ server:
     from_secret: rapidlinks_host_user
   ssh_key:
     from_secret: rapidlinks_ssh_key
+
+clone:
+  disable: true
+
 
 steps:
   - name: Deploy from rapid-bridge-DEV
