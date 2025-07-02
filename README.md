@@ -53,9 +53,9 @@ Third-party services interact with Rapid Bridge by sending HTTP POST requests to
 ```
 
 ### Required Headers
-- `X-Source-Slug`
-- `X-Destination-Slug`
-- `X-Key-Version`
+- `X-Source-Slug`: This header identifies the originating third-party service that is sending the request to Rapid Bridge. It's a unique identifier (slug) for the application or system making the call. This helps Rapid Bridge determine which application's cryptographic configuration to use for signing the outgoing request to Rapid.
+- `X-Destination-Slug`: This header specifies the intended recipient bank. It's a unique identifier (slug) for the bank. Rapid Bridge uses this to look up the correct public keys for encryption and verification when communicating with the Bank Rapid system.
+- `X-Key-Version`: This header indicates the version of the cryptographic keys being used for the current communication. In a system where keys might be rotated or updated over time, this version allows Rapid Bridge to select the correct key pair for encryption, decryption, signing, and verification, ensuring that the correct and current security protocols are applied.
 
 ## Rapid Bridge CLI Documentation
 
