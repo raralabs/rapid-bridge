@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"rapid-bridge/domain/port"
+	"rapid-bridge/internal/adapter/config"
 	"rapid-bridge/internal/dto/rapid"
 
 	"go.uber.org/zap"
@@ -13,6 +14,15 @@ import (
 
 func SendRequestToRapidLinks(logger port.Logger, rapidLinksUrl string, urlPath string, payload rapid.RapidResourceRequest, header http.Header) (rapid.RapidResourceResponse, error) {
 	var response rapid.RapidResourceResponse
+
+	if rapidLinksUrl == "" {
+		bankConfig := config.LoadBankSpecificConfig(payload.To)
+		rapidLinksUrl = bankConfig.BankRapidAPIUrl
+	}
+
+	if rapidLinksUrl == "" {
+		logger.Debug("Rapid URL configuration missing")
+	}
 
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {

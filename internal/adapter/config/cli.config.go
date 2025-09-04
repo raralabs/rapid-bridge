@@ -71,6 +71,14 @@ func (f *FileConfigAdapter) AddBankSlug(bankSlug string) {
 	f.CLIConfig.BankDetails.Slug = bankSlug
 }
 
+func (f *FileConfigAdapter) AddBankRapidUrl(rapidUrl string) {
+	f.CLIConfig.BankDetails.BankRapidUrl = rapidUrl
+}
+
+func (f *FileConfigAdapter) AddBankRapidAPIUrl(rapidAPIUrl string) {
+	f.CLIConfig.BankDetails.BankRapidAPIUrl = rapidAPIUrl
+}
+
 func (f *FileConfigAdapter) AddRegisteredBanks(bankSlug string) {
 	f.CLIConfig.RegisteredBanks = append(f.CLIConfig.RegisteredBanks, bankSlug)
 }
@@ -202,4 +210,20 @@ func LoadApplicationSpecificConfig(applicationSlug string) port.ApplicationDetai
 	}
 
 	return applicationDetails
+}
+
+func LoadBankSpecificConfig(bankSlug string) port.BankDetails {
+	configPath := filepath.Join(constants.RapidBridgeData, constants.Bank, bankSlug, bankSlug+".json")
+
+	configData, err := os.ReadFile(configPath)
+	if err != nil {
+		panic(fmt.Errorf("fatal error reading config file: %w", err))
+	}
+
+	var bankDetails port.BankDetails
+	if err := json.Unmarshal(configData, &bankDetails); err != nil {
+		panic(fmt.Errorf("unable to decode into struct: %w", err))
+	}
+
+	return bankDetails
 }

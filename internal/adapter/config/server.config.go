@@ -42,6 +42,9 @@ type BankDetails struct {
 	RSAPublicKey     *rsa.PublicKey    `json:"rsa_public_key,omitempty"`
 	Ed25519PublicKey ed25519.PublicKey `json:"ed25519_public_key,omitempty"`
 
+	BankRapidUrl    string `json:"bank_rapid_url"`
+	BankRapidAPIUrl string `json:"bank_rapid_api_url"`
+
 	Slug string `json:"slug"`
 }
 

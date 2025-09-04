@@ -17,6 +17,8 @@ type CLIConfig interface {
 	GetApplicationDetails(applicationSlug string) *CLIApplicationDetails
 
 	AddBankSlug(bankSlug string)
+	AddBankRapidUrl(bankSlug string)
+	AddBankRapidAPIUrl(bankSlug string)
 	AddRegisteredBanks(bankSlug string)
 	AddBankKeysPaths(rsaPublicKeyPath string, ed25519PublicKeyPath string)
 
@@ -68,4 +70,9 @@ type CLIApplicationDetails struct {
 
 	Slug       string `json:"slug" mapstructure:"slug"`
 	KeyVersion string `json:"key_version" mapstructure:"key_version"`
+}
+
+type BankDetails struct {
+	BankRapidUrl    string `json:"bank_rapid_url"`
+	BankRapidAPIUrl string `json:"bank_rapid_api_url"`
 }

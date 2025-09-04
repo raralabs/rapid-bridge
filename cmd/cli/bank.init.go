@@ -19,6 +19,8 @@ var bankSlug string
 
 var rapidUrl string
 
+var rapidAPIUrl string
+
 var initBankCmd = &cobra.Command{
 	Use:   "bank",
 	Short: "Initialize bank configuration",
@@ -99,6 +101,8 @@ var initBankCmd = &cobra.Command{
 		}
 
 		app.Config.AddBankSlug(bankSlug)
+		app.Config.AddBankRapidUrl(rapidUrl)
+		app.Config.AddBankRapidAPIUrl(rapidAPIUrl)
 
 		app.Config.AddBankKeysPaths(constants.RapidBridgeData+"/bank/"+bankSlug+"/rsa_public_key.pem", constants.RapidBridgeData+"/bank/"+bankSlug+"/ed25519_public_key.pem")
 
@@ -119,4 +123,7 @@ func init() {
 
 	initBankCmd.Flags().StringVar(&rapidUrl, "rapidUrl", "", "Rapid URL (required)")
 	initBankCmd.MarkFlagRequired("rapidUrl")
+
+	initBankCmd.Flags().StringVar(&rapidAPIUrl, "rapidAPIUrl", "", "Rapid API URL")
+	//initBankCmd.MarkFlagRequired("rapidAPIUrl")
 }

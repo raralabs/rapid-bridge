@@ -100,10 +100,15 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 		return application.ResourceResponse{}, err
 	}
 
-	r.logger.Info("Message from rapid links", zap.String("from", rapidResourceResponse.Data.From), zap.String("to", rapidResourceResponse.Data.To))
+	from = rapidResourceResponse.From
+	to = rapidResourceResponse.To
+	message := rapidResourceResponse.Message
+	signature = rapidResourceResponse.Signature
+
+	r.logger.Info("Message from rapid links", zap.String("from", from), zap.String("to", to))
 
 	// decode message and get ciphertext, encrypted aes key and nonce
-	ciphertext, encryptedAESKey, nonce, err = r.security.DecodeBase64Encrypted(rapidResourceResponse.Data.Message)
+	ciphertext, encryptedAESKey, nonce, err = r.security.DecodeBase64Encrypted(message)
 	if err != nil {
 		r.logger.Error("Failed to decode message", zap.String("error", err.Error()))
 		return application.ResourceResponse{}, err
@@ -117,7 +122,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	}
 
 	// verify signature
-	err = r.security.VerifyDigitalSignature(rapidResourceResponse.Data.Message, rapidResourceResponse.Data.Signature, bankEdPublicKey.(ed25519.PublicKey))
+	err = r.security.VerifyDigitalSignature(message, signature, bankEdPublicKey.(ed25519.PublicKey))
 	if err != nil {
 		r.logger.Error("Failed to verify digital signature", zap.String("error", err.Error()))
 		return application.ResourceResponse{}, err
