@@ -39,6 +39,47 @@ volumes:
       path: /var/run/docker.sock
 
 
+---
+kind: pipeline
+name: Build and Push to rapid-bridge main  tag 
+type: docker
+
+# platform:
+#   arch: amd64
+#   os: linux
+
+steps:
+  - name: build from rapid-bridge-DEV
+    image: bentolor/docker-dind-awscli:dind
+    environment:
+      github_username:
+        from_secret: GITHUB_USERNAME
+      github_token:
+        from_secret: GITHUB_TOKEN
+      ssh_key:
+        from_secret: rapidDemo_ssh_key
+    commands:
+      - export SSH_PRIVATE_KEY="$ssh_key"
+      - docker compose -f deployment/docker-compose.${DRONE_BRANCH}-tag.yaml build
+      - docker login ghcr.io -u $github_username -p $github_token
+      - docker compose -f deployment/docker-compose.${DRONE_BRANCH}-tag.yaml push || true
+
+    volumes:
+      - name: docker_sock
+        path: /var/run/docker.sock
+
+trigger:
+  branch:
+    - main
+  event:
+    - tag
+
+volumes:
+  - name: docker_sock
+    host:
+      path: /var/run/docker.sock
+
+
 
 
 ---
@@ -114,8 +155,6 @@ steps:
       - docker compose down 
       - docker compose up -d
       
-
-
 trigger:
   branch:
     - main
@@ -123,3 +162,43 @@ trigger:
     - push
 depends_on:
   - Build and Push to rapid-bridge
+
+
+
+---
+kind: pipeline
+type: ssh
+name: Pull image and deploy for rapid-bridge main for tigg test 
+
+server:
+  host:
+    from_secret: rapidlinks_tigg-uat
+  user:
+    from_secret: rapidlinks_tigg-uat-user
+  ssh_key:
+    from_secret: rapidlinks_tigg-uat-ssh-key
+
+clone:
+  disable: true
+
+
+steps:
+  - name: Deploy from rapid-bridge-DEV
+    environment:
+        github_username:
+          from_secret: GITHUB_USERNAME
+        github_token:
+          from_secret: GITHUB_TOKEN
+    commands:
+      - cd /home/tiggv2/rapid-bridge-main-tag
+      - docker login ghcr.io -u  $github_username -p $github_token
+      - docker compose -p rapid-main-tag -f docker-compose.yml up  --force-recreate -d
+
+      
+trigger:
+  branch:
+    - main
+  event:
+    - tag
+depends_on:
+  - Build and Push to rapid-bridge main  tag 
