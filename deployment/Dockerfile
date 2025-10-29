@@ -31,7 +31,7 @@ RUN --mount=type=cache,target="/root/.cache/go-build" go build  -o rapid-bridge 
 
 
 # new stage
-FROM debian:buster
+FROM debian:bookworm-slim
 
 WORKDIR /app
 
