@@ -100,10 +100,10 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 		return application.ResourceResponse{}, err
 	}
 
-	from = rapidResourceResponse.From
-	to = rapidResourceResponse.To
-	message := rapidResourceResponse.Message
-	signature = rapidResourceResponse.Signature
+	from = rapidResourceResponse.GetFrom()
+	to = rapidResourceResponse.GetTo()
+	message := rapidResourceResponse.GetMessage()
+	signature = rapidResourceResponse.GetSignature()
 
 	r.logger.Info("Message from rapid links", zap.String("from", from), zap.String("to", to))
 
