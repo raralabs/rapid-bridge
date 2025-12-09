@@ -192,6 +192,7 @@ steps:
     commands:
       - cd /home/tiggv2/rapid-bridge-main
       - docker login ghcr.io -u  $github_username -p $github_token
+      - docker compose -p rapid-bridge-main -f docker-compose.yml pull
       - docker compose -p rapid-bridge-main -f docker-compose.yml up  --force-recreate -d
 
       
