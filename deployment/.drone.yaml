@@ -190,7 +190,7 @@ steps:
         github_token:
           from_secret: GITHUB_TOKEN
     commands:
-      - cd /home/tiggv2/rapid-bridge-main-tag
+      - cd /home/tiggv2/rapid-bridge-main
       - docker login ghcr.io -u  $github_username -p $github_token
       - docker compose -p rapid-main-tag -f docker-compose.yml up  --force-recreate -d
 
@@ -199,6 +199,6 @@ trigger:
   branch:
     - main
   event:
-    - tag
+    - push
 depends_on:
   - Build and Push to rapid-bridge main  tag 
