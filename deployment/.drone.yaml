@@ -192,7 +192,7 @@ steps:
     commands:
       - cd /home/tiggv2/rapid-bridge-main
       - docker login ghcr.io -u  $github_username -p $github_token
-      - docker compose -p rapid-main-tag -f docker-compose.yml up  --force-recreate -d
+      - docker compose -p rapid-bridge-main -f docker-compose.yml up  --force-recreate -d
 
       
 trigger:
@@ -201,4 +201,4 @@ trigger:
   event:
     - push
 depends_on:
-  - Build and Push to rapid-bridge main  tag 
+  - Build and Push to rapid-bridge
