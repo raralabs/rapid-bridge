@@ -9,7 +9,6 @@ import (
 	"rapid-bridge/domain/port"
 	"rapid-bridge/domain/security"
 	"rapid-bridge/internal/adapter"
-	"rapid-bridge/internal/adapter/cache"
 	"rapid-bridge/internal/dto/application"
 	"rapid-bridge/internal/dto/rapid"
 	"rapid-bridge/pkg/util"
@@ -23,7 +22,7 @@ type RapidResourceService struct {
 	security security.Security
 	logger   port.Logger
 	config   port.ServerConfig
-	keyCache *cache.KeyCache
+	keyCache port.KeyCache
 }
 
 func (r *RapidResourceService) HandleResource(c echo.Context, request application.ResourceRequest) (application.ResourceResponse, error) {
@@ -197,7 +196,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	return applicationResponse, nil
 }
 
-func NewRapidResourceService(keyLoader port.KeyLoader, security security.Security, logger port.Logger, config port.ServerConfig, keyCache *cache.KeyCache) *RapidResourceService {
+func NewRapidResourceService(keyLoader port.KeyLoader, security security.Security, logger port.Logger, config port.ServerConfig, keyCache port.KeyCache) *RapidResourceService {
 	return &RapidResourceService{
 		loader:   keyLoader,
 		security: security,

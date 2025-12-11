@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"rapid-bridge/constants"
 	"rapid-bridge/domain/port"
-	"rapid-bridge/internal/adapter/cache"
 	"rapid-bridge/internal/adapter/config"
 	"rapid-bridge/internal/dto/playground"
 	"rapid-bridge/internal/setup"
@@ -29,10 +28,10 @@ type PlaygroundService struct {
 	keyConverter port.KeyConverter
 	keySaver     port.KeySaver
 	keyService   *KeyService
-	keyCache     *cache.KeyCache
+	keyCache     port.KeyCache
 }
 
-func NewPlaygroundService(logger port.Logger, app *setup.CLIApplication, keyLoader port.KeyLoader, keyConverter port.KeyConverter, keySaver port.KeySaver, keyService *KeyService, keyCache *cache.KeyCache) *PlaygroundService {
+func NewPlaygroundService(logger port.Logger, app *setup.CLIApplication, keyLoader port.KeyLoader, keyConverter port.KeyConverter, keySaver port.KeySaver, keyService *KeyService, keyCache port.KeyCache) *PlaygroundService {
 	return &PlaygroundService{logger: logger, app: app, keyLoader: keyLoader, keyConverter: keyConverter, keySaver: keySaver, keyService: keyService, keyCache: keyCache}
 }
 

@@ -11,13 +11,13 @@ import (
 type Application struct {
 	Config   port.ServerConfig
 	Logger   port.Logger
-	KeyCache *cache.KeyCache
+	KeyCache port.KeyCache
 }
 
 type CLIApplication struct {
 	Config   port.CLIConfig
 	Logger   port.Logger
-	KeyCache *cache.KeyCache
+	KeyCache port.KeyCache
 }
 
 func NewApplication() *Application {
@@ -31,10 +31,12 @@ func NewApplication() *Application {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
+	keyCache := cache.NewKeyCacheAdapter()
+
 	return &Application{
 		Config:   cfg,
 		Logger:   logger,
-		KeyCache: cache.NewKeyCache(),
+		KeyCache: keyCache,
 	}
 }
 
@@ -49,9 +51,11 @@ func NewCLIApplication() *CLIApplication {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
+	keyCache := cache.NewKeyCacheAdapter()
+
 	return &CLIApplication{
 		Config:   cfg,
 		Logger:   logger,
-		KeyCache: cache.NewKeyCache(),
+		KeyCache: keyCache,
 	}
 }
