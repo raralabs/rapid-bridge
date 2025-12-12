@@ -2,3 +2,9 @@
 .env
 _rapid_bridge_data/
 rapid-bridge
+
+.idea/.gitignore
+.idea/go.imports.xml
+.idea/modules.xml
+.idea/rapid-bridge.iml
+.idea/vcs.xml
