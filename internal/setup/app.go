@@ -3,18 +3,21 @@ package setup
 import (
 	"log"
 	"rapid-bridge/domain/port"
+	"rapid-bridge/internal/adapter/cache"
 	"rapid-bridge/internal/adapter/config"
 	"rapid-bridge/internal/adapter/logger"
 )
 
 type Application struct {
-	Config port.ServerConfig
-	Logger port.Logger
+	Config   port.ServerConfig
+	Logger   port.Logger
+	KeyCache port.KeyCache
 }
 
 type CLIApplication struct {
-	Config port.CLIConfig
-	Logger port.Logger
+	Config   port.CLIConfig
+	Logger   port.Logger
+	KeyCache port.KeyCache
 }
 
 func NewApplication() *Application {
@@ -28,9 +31,12 @@ func NewApplication() *Application {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
+	keyCache := cache.NewKeyCacheAdapter()
+
 	return &Application{
-		Config: cfg,
-		Logger: logger,
+		Config:   cfg,
+		Logger:   logger,
+		KeyCache: keyCache,
 	}
 }
 
@@ -45,8 +51,11 @@ func NewCLIApplication() *CLIApplication {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
+	keyCache := cache.NewKeyCacheAdapter()
+
 	return &CLIApplication{
-		Config: cfg,
-		Logger: logger,
+		Config:   cfg,
+		Logger:   logger,
+		KeyCache: keyCache,
 	}
 }
