@@ -5,7 +5,7 @@ Rapid Bridge is a cryptographic proxy designed to facilitate secure, authenticat
 ## Project Purpose
 
 The primary purpose of Rapid Bridge is to solve the challenge of secure and authenticated communication between third-party applications and bank Rapid. It acts as a intermediary, handling all cryptographic operations to ensure:
-
+ 
 - **Data Protection**: Sensitive data remains encrypted while in transit.
 - **Authentication**: Only authorized parties can send or receive information.
 - **Verification**: Data origin and integrity are guaranteed.
