@@ -124,6 +124,9 @@ trigger:
 depends_on:
   - Build and Push to rapid-bridge
 
+
+
+
 ---
 kind: pipeline
 type: ssh
@@ -155,6 +158,47 @@ steps:
       - docker compose down 
       - docker compose up -d
       
+# trigger:
+#   branch:
+#     - main
+#   event:
+#     - push
+# depends_on:
+#   - Build and Push to rapid-bridge
+
+
+
+---
+kind: pipeline
+type: ssh
+name: Pull image and deploy for rapid-bridge main for tigg uat environment 
+
+server:
+  host:
+    from_secret: rapidlinks_tigg-uat
+  user:
+    from_secret: rapidlinks_tigg-uat-user
+  ssh_key:
+    from_secret: rapidlinks_tigg-uat-ssh-key
+
+clone:
+  disable: true
+
+
+steps:
+  - name: Deploy from rapid-bridge-DEV
+    environment:
+        github_username:
+          from_secret: GITHUB_USERNAME
+        github_token:
+          from_secret: GITHUB_TOKEN
+    commands:
+      - cd /home/tiggv2/rapid-bridge-main
+      - docker login ghcr.io -u  $github_username -p $github_token
+      - docker compose -p rapid-bridge-main -f docker-compose.yml pull
+      - docker compose -p rapid-bridge-main -f docker-compose.yml up  --force-recreate -d
+
+      
 trigger:
   branch:
     - main
@@ -165,18 +209,19 @@ depends_on:
 
 
 
+
 ---
 kind: pipeline
 type: ssh
-name: Pull image and deploy for rapid-bridge main for tigg test 
+name: Pull image and deploy for rapid-bridge main for tigg uat environment 
 
 server:
   host:
-    from_secret: rapidlinks_tigg-uat
+    from_secret: TIGG_BE_V2_PROD_HOST
   user:
-    from_secret: rapidlinks_tigg-uat-user
+    from_secret: TIGG_BE_V2_PROD_USER
   ssh_key:
-    from_secret: rapidlinks_tigg-uat-ssh-key
+    from_secret: TIGG_BE_V2_KEY
 
 clone:
   disable: true
