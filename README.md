@@ -120,7 +120,8 @@ rapid-bridge init bank --slug abcBank --rapidUrl https://portal.bankabc.rapidlin
 
 **Required Flags:**
 - `--slug`: The unique identifier for the bank.
-- `--rapidUrl`: The Rapid Bridge service URL.
+- `--rapidUrl`: The Rapid public portal URL.
+- `--rapidAPIUrl`: The Rapid API URL.
 
 **Workflow:**
 1. Checks if the bank is already registered.
