@@ -10,22 +10,22 @@ type KeyCache interface {
 	// Parsed keys
 
 	SetRSAPrivateKey(source, keyVersion string, isApp bool, key *rsa.PrivateKey)
-	GetRSAPrivateKey(source, keyVersion string, isApp bool) (*rsa.PrivateKey, error)
+	GetRSAPrivateKey(source, keyVersion string, isApp bool) *rsa.PrivateKey
 
 	SetRSAPublicKey(source, keyVersion string, isApp bool, key *rsa.PublicKey)
-	GetRSAPublicKey(source, keyVersion string, isApp bool) (*rsa.PublicKey, error)
+	GetRSAPublicKey(source, keyVersion string, isApp bool) *rsa.PublicKey
 
 	SetEd25519PrivateKey(source, keyVersion string, isApp bool, key ed25519.PrivateKey)
-	GetEd25519PrivateKey(source, keyVersion string, isApp bool) (ed25519.PrivateKey, error)
+	GetEd25519PrivateKey(source, keyVersion string, isApp bool) ed25519.PrivateKey
 
 	SetEd25519PublicKey(source, keyVersion string, isApp bool, key ed25519.PublicKey)
-	GetEd25519PublicKey(source, keyVersion string, isApp bool) (ed25519.PublicKey, error)
+	GetEd25519PublicKey(source, keyVersion string, isApp bool) ed25519.PublicKey
 
 	// Raw keys
 
-	SetRawPrivateKey(source, keyVersion string, isApp bool, key []byte)
-	GetRawPrivateKey(source, keyVersion string, isApp bool) ([]byte, error)
+	SetRawRSAPublicKey(source, keyVersion string, isApp bool, key []byte)
+	GetRawRSAPublicKey(source, keyVersion string, isApp bool) []byte
 
-	SetRawPublicKey(source, keyVersion string, isApp bool, key []byte)
-	GetRawPublicKey(source, keyVersion string, isApp bool) ([]byte, error)
+	SetRawED25519PublicKey(source, keyVersion string, isApp bool, key []byte)
+	GetRawED25519PublicKey(source, keyVersion string, isApp bool) []byte
 }

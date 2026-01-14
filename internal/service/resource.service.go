@@ -37,8 +37,8 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	// If loading from cache fails then loading keys from the file structure
 
 	// RSA Private Key (Application)
-	rsaPrivateKey, err := r.keyCache.GetRSAPrivateKey(from, keyVersion, true)
-	if err != nil {
+	rsaPrivateKey := r.keyCache.GetRSAPrivateKey(from, keyVersion, true)
+	if rsaPrivateKey == nil {
 		rsaPrivateKeyPath := util.GetRSAPrivateKeyPath(from, keyVersion)
 		keyAny, err := r.loader.LoadPrivateKey(rsaPrivateKeyPath)
 		if err != nil {
@@ -58,8 +58,8 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	}
 
 	// ED25519 Private Key (Application)
-	ed25519PrivateKey, err := r.keyCache.GetEd25519PrivateKey(from, keyVersion, true)
-	if err != nil {
+	ed25519PrivateKey := r.keyCache.GetEd25519PrivateKey(from, keyVersion, true)
+	if ed25519PrivateKey == nil {
 		edPrivateKeyPath := util.GetEd25519PrivateKeyPath(from, keyVersion)
 		keyAny, err := r.loader.LoadPrivateKey(edPrivateKeyPath)
 		if err != nil {
@@ -79,9 +79,9 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	}
 
 	// RSA Public Key (Bank)
-	bankRsaPublicKey, err := r.keyCache.GetRSAPublicKey(to, keyVersion, false)
-	if err != nil {
-		bankRsaPublicKeyPath := util.GetRSAPublicKeyPath(to, keyVersion)
+	bankRsaPublicKey := r.keyCache.GetRSAPublicKey(to, keyVersion, false)
+	if bankRsaPublicKey == nil {
+		bankRsaPublicKeyPath := util.GetBankRSAPublicKeyPath(to)
 		keyAny, err := r.loader.LoadPublicKey(bankRsaPublicKeyPath)
 		if err != nil {
 			r.logger.Error("Failed to load Bank's RSA Public Key from file", zap.String("error", err.Error()))
@@ -100,8 +100,8 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	}
 
 	// ED25519 Public Key (Bank)
-	bankEdPublicKey, err := r.keyCache.GetEd25519PublicKey(to, keyVersion, false)
-	if err != nil {
+	bankEdPublicKey := r.keyCache.GetEd25519PublicKey(to, keyVersion, false)
+	if bankEdPublicKey == nil {
 		bankEdPublicKeyPath := util.GetBankEd25519PublicKeyPath(to)
 		keyAny, err := r.loader.LoadPublicKey(bankEdPublicKeyPath)
 		if err != nil {

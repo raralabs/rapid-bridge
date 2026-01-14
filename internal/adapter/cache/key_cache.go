@@ -15,18 +15,18 @@ type KeyCacheAdapter struct {
 	ed25519PublicKeys  map[string]ed25519.PublicKey
 
 	// Raw []byte keys
-	rawPrivateKeys map[string][]byte
-	rawPublicKeys  map[string][]byte
+	rawRSAPublicKeys     map[string][]byte
+	rawED25519PublicKeys map[string][]byte
 }
 
 func NewKeyCacheAdapter() port.KeyCache {
 	return &KeyCacheAdapter{
-		rsaPrivateKeys:     make(map[string]*rsa.PrivateKey),
-		rsaPublicKeys:      make(map[string]*rsa.PublicKey),
-		ed25519PrivateKeys: make(map[string]ed25519.PrivateKey),
-		ed25519PublicKeys:  make(map[string]ed25519.PublicKey),
-		rawPrivateKeys:     make(map[string][]byte),
-		rawPublicKeys:      make(map[string][]byte),
+		rsaPrivateKeys:       make(map[string]*rsa.PrivateKey),
+		rsaPublicKeys:        make(map[string]*rsa.PublicKey),
+		ed25519PrivateKeys:   make(map[string]ed25519.PrivateKey),
+		ed25519PublicKeys:    make(map[string]ed25519.PublicKey),
+		rawRSAPublicKeys:     make(map[string][]byte),
+		rawED25519PublicKeys: make(map[string][]byte),
 	}
 }
 
@@ -47,12 +47,12 @@ func (c *KeyCacheAdapter) SetRSAPrivateKey(source, keyVersion string, isApp bool
 
 // Get RSA Private Key
 
-func (c *KeyCacheAdapter) GetRSAPrivateKey(source, keyVersion string, isApp bool) (*rsa.PrivateKey, error) {
+func (c *KeyCacheAdapter) GetRSAPrivateKey(source, keyVersion string, isApp bool) *rsa.PrivateKey {
 	key, ok := c.rsaPrivateKeys[generateKeyID(source, keyVersion, isApp)]
 	if !ok {
-		return nil, fmt.Errorf("RSA private key not found for %s", generateKeyID(source, keyVersion, isApp))
+		return nil
 	}
-	return key, nil
+	return key
 }
 
 // Set RSA Public Key
@@ -63,12 +63,12 @@ func (c *KeyCacheAdapter) SetRSAPublicKey(source, keyVersion string, isApp bool,
 
 // Get RSA Public Key
 
-func (c *KeyCacheAdapter) GetRSAPublicKey(source, keyVersion string, isApp bool) (*rsa.PublicKey, error) {
+func (c *KeyCacheAdapter) GetRSAPublicKey(source, keyVersion string, isApp bool) *rsa.PublicKey {
 	key, ok := c.rsaPublicKeys[generateKeyID(source, keyVersion, isApp)]
 	if !ok {
-		return nil, fmt.Errorf("RSA public key not found for %s", generateKeyID(source, keyVersion, isApp))
+		return nil
 	}
-	return key, nil
+	return key
 }
 
 // Set ED25519 Private Key
@@ -79,12 +79,12 @@ func (c *KeyCacheAdapter) SetEd25519PrivateKey(source, keyVersion string, isApp 
 
 // Get ED25519 Private Key
 
-func (c *KeyCacheAdapter) GetEd25519PrivateKey(source, keyVersion string, isApp bool) (ed25519.PrivateKey, error) {
+func (c *KeyCacheAdapter) GetEd25519PrivateKey(source, keyVersion string, isApp bool) ed25519.PrivateKey {
 	key, ok := c.ed25519PrivateKeys[generateKeyID(source, keyVersion, isApp)]
 	if !ok {
-		return nil, fmt.Errorf("Ed25519 private key not found for %s", generateKeyID(source, keyVersion, isApp))
+		return nil
 	}
-	return key, nil
+	return key
 }
 
 // Set ED25519 Public Key
@@ -95,44 +95,44 @@ func (c *KeyCacheAdapter) SetEd25519PublicKey(source, keyVersion string, isApp b
 
 // Get ED25519 Public Key
 
-func (c *KeyCacheAdapter) GetEd25519PublicKey(source, keyVersion string, isApp bool) (ed25519.PublicKey, error) {
+func (c *KeyCacheAdapter) GetEd25519PublicKey(source, keyVersion string, isApp bool) ed25519.PublicKey {
 	key, ok := c.ed25519PublicKeys[generateKeyID(source, keyVersion, isApp)]
 	if !ok {
-		return nil, fmt.Errorf("Ed25519 public key not found for %s", generateKeyID(source, keyVersion, isApp))
+		return nil
 	}
-	return key, nil
+	return key
 }
 
-// Set and Get Functions for Raw Keys
+// Set and Get Functions for Raw RSA Keys
 
-// Set Raw Private Key
+// Set Raw RSA Public Key
 
-func (c *KeyCacheAdapter) SetRawPrivateKey(source, keyVersion string, isApp bool, key []byte) {
-	c.rawPrivateKeys[generateKeyID(source, keyVersion, isApp)] = key
+func (c *KeyCacheAdapter) SetRawRSAPublicKey(source, keyVersion string, isApp bool, key []byte) {
+	c.rawRSAPublicKeys[generateKeyID(source, keyVersion, isApp)] = key
 }
 
-// Get Raw Public Key
+// Get Raw RSA Public Key
 
-func (c *KeyCacheAdapter) GetRawPrivateKey(source, keyVersion string, isApp bool) ([]byte, error) {
-	key, ok := c.rawPrivateKeys[generateKeyID(source, keyVersion, isApp)]
+func (c *KeyCacheAdapter) GetRawRSAPublicKey(source, keyVersion string, isApp bool) []byte {
+	key, ok := c.rawRSAPublicKeys[generateKeyID(source, keyVersion, isApp)]
 	if !ok {
-		return nil, fmt.Errorf("Raw private key not found for %s", generateKeyID(source, keyVersion, isApp))
+		return nil
 	}
-	return key, nil
+	return key
 }
 
-// Set Raw Public Key
+// Set Raw EDD25519 Public Key
 
-func (c *KeyCacheAdapter) SetRawPublicKey(source, keyVersion string, isApp bool, key []byte) {
-	c.rawPublicKeys[generateKeyID(source, keyVersion, isApp)] = key
+func (c *KeyCacheAdapter) SetRawED25519PublicKey(source, keyVersion string, isApp bool, key []byte) {
+	c.rawED25519PublicKeys[generateKeyID(source, keyVersion, isApp)] = key
 }
 
-// Get Raw Public Key
+// Get Raw ED25519 Public Key
 
-func (c *KeyCacheAdapter) GetRawPublicKey(source, keyVersion string, isApp bool) ([]byte, error) {
-	key, ok := c.rawPublicKeys[generateKeyID(source, keyVersion, isApp)]
+func (c *KeyCacheAdapter) GetRawED25519PublicKey(source, keyVersion string, isApp bool) []byte {
+	key, ok := c.rawED25519PublicKeys[generateKeyID(source, keyVersion, isApp)]
 	if !ok {
-		return nil, fmt.Errorf("Raw public key not found for %s", generateKeyID(source, keyVersion, isApp))
+		return nil
 	}
-	return key, nil
+	return key
 }

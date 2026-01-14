@@ -35,6 +35,12 @@ func NewPlaygroundService(logger port.Logger, app *setup.CLIApplication, keyLoad
 	return &PlaygroundService{logger: logger, app: app, keyLoader: keyLoader, keyConverter: keyConverter, keySaver: keySaver, keyService: keyService, keyCache: keyCache}
 }
 
+var (
+	rsaPublicKeyBytes     []byte
+	ed25519PublicKeyBytes []byte
+	err                   error
+)
+
 func (s *PlaygroundService) getApplicationDetails(applicationSlug string) (ApplicationDetails, error) {
 
 	applicationDetails := config.LoadApplicationSpecificConfig(applicationSlug)
@@ -58,29 +64,29 @@ func (s *PlaygroundService) getApplicationDetails(applicationSlug string) (Appli
 	// If loading from cache fails then loading keys from the file structure
 
 	// RSA Public Key (Application)
-	rsaPublicKeyBytes, err := s.keyCache.GetRawPublicKey(applicationDetails.Slug, applicationDetails.KeyVersion, true)
-	if err != nil {
+	rsaPublicKeyBytes = s.keyCache.GetRawRSAPublicKey(applicationDetails.Slug, applicationDetails.KeyVersion, true)
+	if len(rsaPublicKeyBytes) == 0 {
 		rsaPublicKeyBytes, err = util.ReadFile(applicationDetails.RSAPublicKeyPath)
 		if err != nil {
 			s.logger.Error("Failed to read RSA public keys", zap.String("error", err.Error()))
 			return ApplicationDetails{}, err
 		}
 
-		s.keyCache.SetRawPublicKey(applicationDetails.Slug, applicationDetails.KeyVersion, true, rsaPublicKeyBytes)
+		s.keyCache.SetRawRSAPublicKey(applicationDetails.Slug, applicationDetails.KeyVersion, true, rsaPublicKeyBytes)
 	}
 
 	rsaPublicKey := s.sanitizePublicKey(string(rsaPublicKeyBytes))
 
 	// ED25519 Public Key (Application)
-	ed25519PublicKeyBytes, err := s.keyCache.GetRawPublicKey(applicationDetails.Slug, applicationDetails.KeyVersion, true)
-	if err != nil {
+	ed25519PublicKeyBytes = s.keyCache.GetRawED25519PublicKey(applicationDetails.Slug, applicationDetails.KeyVersion, true)
+	if len(ed25519PublicKeyBytes) == 0 {
 		ed25519PublicKeyBytes, err = util.ReadFile(applicationDetails.Ed25519PublicKeyPath)
 		if err != nil {
 			s.logger.Error("Failed to read ED25519 public keys", zap.String("error", err.Error()))
 			return ApplicationDetails{}, err
 		}
 
-		s.keyCache.SetRawPublicKey(applicationDetails.Slug, applicationDetails.KeyVersion, true, ed25519PublicKeyBytes)
+		s.keyCache.SetRawED25519PublicKey(applicationDetails.Slug, applicationDetails.KeyVersion, true, ed25519PublicKeyBytes)
 	}
 
 	ed25519PublicKey := s.sanitizePublicKey(string(ed25519PublicKeyBytes))
