@@ -24,8 +24,8 @@ type KeyCache interface {
 	// Raw keys
 
 	SetRawRSAPublicKey(source, keyVersion string, isApp bool, key []byte)
-	GetRawRSAPublicKey(source, keyVersion string, isApp bool) []byte
+	GetRawRSAPublicKey(source, keyPath, keyVersion string, isApp bool) []byte
 
 	SetRawED25519PublicKey(source, keyVersion string, isApp bool, key []byte)
-	GetRawED25519PublicKey(source, keyVersion string, isApp bool) []byte
+	GetRawED25519PublicKey(source, keyPath, keyVersion string, isApp bool) []byte
 }

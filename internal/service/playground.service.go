@@ -64,29 +64,19 @@ func (s *PlaygroundService) getApplicationDetails(applicationSlug string) (Appli
 	// If loading from cache fails then loading keys from the file structure
 
 	// RSA Public Key (Application)
-	rsaPublicKeyBytes = s.keyCache.GetRawRSAPublicKey(applicationDetails.Slug, applicationDetails.KeyVersion, true)
+	rsaPublicKeyBytes = s.keyCache.GetRawRSAPublicKey(applicationDetails.Slug, applicationDetails.RSAPublicKeyPath, applicationDetails.KeyVersion, true)
 	if len(rsaPublicKeyBytes) == 0 {
-		rsaPublicKeyBytes, err = util.ReadFile(applicationDetails.RSAPublicKeyPath)
-		if err != nil {
-			s.logger.Error("Failed to read RSA public keys", zap.String("error", err.Error()))
-			return ApplicationDetails{}, err
-		}
-
-		s.keyCache.SetRawRSAPublicKey(applicationDetails.Slug, applicationDetails.KeyVersion, true, rsaPublicKeyBytes)
+		s.logger.Error("Failed to fetch Applications's RSA Public Key from cache.")
+		return ApplicationDetails{}, err
 	}
 
 	rsaPublicKey := s.sanitizePublicKey(string(rsaPublicKeyBytes))
 
 	// ED25519 Public Key (Application)
-	ed25519PublicKeyBytes = s.keyCache.GetRawED25519PublicKey(applicationDetails.Slug, applicationDetails.KeyVersion, true)
+	ed25519PublicKeyBytes = s.keyCache.GetRawED25519PublicKey(applicationDetails.Slug, applicationDetails.Ed25519PublicKeyPath, applicationDetails.KeyVersion, true)
 	if len(ed25519PublicKeyBytes) == 0 {
-		ed25519PublicKeyBytes, err = util.ReadFile(applicationDetails.Ed25519PublicKeyPath)
-		if err != nil {
-			s.logger.Error("Failed to read ED25519 public keys", zap.String("error", err.Error()))
-			return ApplicationDetails{}, err
-		}
-
-		s.keyCache.SetRawED25519PublicKey(applicationDetails.Slug, applicationDetails.KeyVersion, true, ed25519PublicKeyBytes)
+		s.logger.Error("Failed to fetch Applications's ED25519 Public Key from cache.")
+		return ApplicationDetails{}, err
 	}
 
 	ed25519PublicKey := s.sanitizePublicKey(string(ed25519PublicKeyBytes))
