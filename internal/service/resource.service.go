@@ -128,9 +128,20 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 		return application.ResourceResponse{}, err
 	}
 
+	if rapidResourceResponse.StatusCode != 200 {
+
+		r.logger.Error("Rapid links returned error", zap.Int("status_code", rapidResourceResponse.StatusCode))
+		return application.ResourceResponse{
+			StatusCode:   rapidResourceResponse.StatusCode,
+			ErrorMessage: string(decryptedPayload),
+		}, err
+	}
+
 	// create rapid resource response
 	applicationResponse := application.ResourceResponse{
-		Message: string(decryptedPayload),
+		Message:      string(decryptedPayload),
+		StatusCode:   200,
+		ErrorMessage: "",
 	}
 
 	return applicationResponse, nil
