@@ -1,8 +1,6 @@
 package service
 
 import (
-	"crypto/ed25519"
-	"crypto/rsa"
 	"encoding/json"
 	"fmt"
 	"rapid-bridge/constants"
@@ -37,87 +35,31 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	// If loading from cache fails then loading keys from the file structure
 
 	// RSA Private Key (Application)
-	rsaPrivateKey, err := r.keyCache.GetRSAPrivateKey(from, keyVersion, true)
-	if err != nil {
-		rsaPrivateKeyPath := util.GetRSAPrivateKeyPath(from, keyVersion)
-		keyAny, err := r.loader.LoadPrivateKey(rsaPrivateKeyPath)
-		if err != nil {
-			r.logger.Error("Failed to load Application's RSA Private Key from file", zap.String("error", err.Error()))
-			return application.ResourceResponse{}, err
-		}
-
-		// Type assertion from any to *rsa.PrivateKey
-		key, ok := keyAny.(*rsa.PrivateKey)
-		if !ok {
-			r.logger.Error("Failed to convert datatype from any to *rsa.Private")
-			return application.ResourceResponse{}, fmt.Errorf("loaded key is not an RSA private key")
-		}
-
-		r.keyCache.SetRSAPrivateKey(from, keyVersion, true, key)
-		rsaPrivateKey = key
+	rsaPrivateKey := r.keyCache.GetRSAPrivateKey(from, keyVersion, true)
+	if rsaPrivateKey == nil {
+		r.logger.Error("Failed to fetch Application's RSA Private Key.")
+		return application.ResourceResponse{}, fmt.Errorf("Failed to fetch Application's RSA Private Key from cache.")
 	}
 
 	// ED25519 Private Key (Application)
-	ed25519PrivateKey, err := r.keyCache.GetEd25519PrivateKey(from, keyVersion, true)
-	if err != nil {
-		edPrivateKeyPath := util.GetEd25519PrivateKeyPath(from, keyVersion)
-		keyAny, err := r.loader.LoadPrivateKey(edPrivateKeyPath)
-		if err != nil {
-			r.logger.Error("Failed to load Application's ED25519 Private Key from file", zap.String("error", err.Error()))
-			return application.ResourceResponse{}, err
-		}
-
-		// Type assertion from any to ed25519.PrivateKey
-		key, ok := keyAny.(ed25519.PrivateKey)
-		if !ok {
-			r.logger.Error("Failed to convert datatype from any to *rsa.Private")
-			return application.ResourceResponse{}, fmt.Errorf("loaded key is not an ED25519 private key")
-		}
-
-		r.keyCache.SetEd25519PrivateKey(from, keyVersion, true, key)
-		ed25519PrivateKey = key
+	ed25519PrivateKey := r.keyCache.GetEd25519PrivateKey(from, keyVersion, true)
+	if ed25519PrivateKey == nil {
+		r.logger.Error("Failed to fetch Application's ED25519 Private Key from cache.")
+		return application.ResourceResponse{}, fmt.Errorf("Failed to fetch Application's ED25519 Private Key from cache.")
 	}
 
 	// RSA Public Key (Bank)
-	bankRsaPublicKey, err := r.keyCache.GetRSAPublicKey(to, keyVersion, false)
-	if err != nil {
-		bankRsaPublicKeyPath := util.GetRSAPublicKeyPath(to, keyVersion)
-		keyAny, err := r.loader.LoadPublicKey(bankRsaPublicKeyPath)
-		if err != nil {
-			r.logger.Error("Failed to load Bank's RSA Public Key from file", zap.String("error", err.Error()))
-			return application.ResourceResponse{}, err
-		}
-
-		// Type assertion from any to *rsa.PublicKey
-		key, ok := keyAny.(*rsa.PublicKey)
-		if !ok {
-			r.logger.Error("Failed to convert datatype from any to *rsa.PublicKey")
-			return application.ResourceResponse{}, fmt.Errorf("loaded key is not an RSA public key")
-		}
-
-		r.keyCache.SetRSAPublicKey(to, keyVersion, false, key)
-		bankRsaPublicKey = key
+	bankRsaPublicKey := r.keyCache.GetRSAPublicKey(to, keyVersion, false)
+	if bankRsaPublicKey == nil {
+		r.logger.Error("Failed to fetch Bank's RSA Public Key from cache.")
+		return application.ResourceResponse{}, fmt.Errorf("Failed to fetch Bank's RSA Public Key from cache.")
 	}
 
 	// ED25519 Public Key (Bank)
-	bankEdPublicKey, err := r.keyCache.GetEd25519PublicKey(to, keyVersion, false)
-	if err != nil {
-		bankEdPublicKeyPath := util.GetBankEd25519PublicKeyPath(to)
-		keyAny, err := r.loader.LoadPublicKey(bankEdPublicKeyPath)
-		if err != nil {
-			r.logger.Error("Failed to load Bank's ED25519 Public Key from file", zap.String("error", err.Error()))
-			return application.ResourceResponse{}, err
-		}
-
-		// Type assertion from any to ed25519.PublicKey
-		key, ok := keyAny.(ed25519.PublicKey)
-		if !ok {
-			r.logger.Error("Failed to convert datatype from any to ed25519.PublicKey")
-			return application.ResourceResponse{}, fmt.Errorf("loaded key is not an ED25519 public key")
-		}
-
-		r.keyCache.SetEd25519PublicKey(to, keyVersion, false, key)
-		bankEdPublicKey = key
+	bankEdPublicKey := r.keyCache.GetEd25519PublicKey(to, keyVersion, false)
+	if bankEdPublicKey == nil {
+		r.logger.Error("Failed to fetch Bank's EDD25519 Public Key from cache.")
+		return application.ResourceResponse{}, fmt.Errorf("Failed to fetch Bank's EDD25519 Public Key from cache.")
 	}
 
 	// convert request struct to bytes
@@ -156,7 +98,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	rapidLinksUrl := r.config.GetRapidLinksUrl()
 	rapidResourceResponse, err := adapter.SendRequestToRapidLinks(r.logger, rapidLinksUrl, c.Request().URL.Path, rapidResourceRequest, c.Request().Header)
 	if err != nil {
-		r.logger.Error("Failed to send rapid resource request to rapid links", zap.String("error", err.Error()))
+		r.logger.Error("Failed to send rapid resource request to rapid links", zap.String("error`", err.Error()))
 		return application.ResourceResponse{}, err
 	}
 
@@ -165,7 +107,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	message := rapidResourceResponse.GetMessage()
 	signature = rapidResourceResponse.GetSignature()
 
-	r.logger.Info("Message from rapid links", zap.String("from", from), zap.String("to", to))
+	r.logger.Info("Successfully called to Rapid", zap.String("URL", rapidLinksUrl+c.Request().URL.Path), zap.String("Source Slug", rapidResourceRequest.From), zap.String("Destination Slug", rapidResourceRequest.To), zap.String("Key Version", rapidResourceRequest.KeyVersion))
 
 	// decode message and get ciphertext, encrypted aes key and nonce
 	ciphertext, encryptedAESKey, nonce, err = r.security.DecodeBase64Encrypted(message)

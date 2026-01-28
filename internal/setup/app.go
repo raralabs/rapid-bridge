@@ -5,6 +5,7 @@ import (
 	"rapid-bridge/domain/port"
 	"rapid-bridge/internal/adapter/cache"
 	"rapid-bridge/internal/adapter/config"
+	keymanagementfs "rapid-bridge/internal/adapter/keymanagement_fs"
 	"rapid-bridge/internal/adapter/logger"
 )
 
@@ -31,12 +32,14 @@ func NewApplication() *Application {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	keyCache := cache.NewKeyCacheAdapter()
+	keyLoader := keymanagementfs.NewFSKeyLoader()
+
+	keyCacheAdapter := cache.NewKeyCacheAdapter(keyLoader, logger)
 
 	return &Application{
 		Config:   cfg,
 		Logger:   logger,
-		KeyCache: keyCache,
+		KeyCache: keyCacheAdapter,
 	}
 }
 
@@ -51,7 +54,9 @@ func NewCLIApplication() *CLIApplication {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	keyCache := cache.NewKeyCacheAdapter()
+	keyLoader := keymanagementfs.NewFSKeyLoader()
+
+	keyCache := cache.NewKeyCacheAdapter(keyLoader, logger)
 
 	return &CLIApplication{
 		Config:   cfg,
