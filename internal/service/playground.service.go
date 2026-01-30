@@ -35,12 +35,6 @@ func NewPlaygroundService(logger port.Logger, app *setup.CLIApplication, keyLoad
 	return &PlaygroundService{logger: logger, app: app, keyLoader: keyLoader, keyConverter: keyConverter, keySaver: keySaver, keyService: keyService, keyCache: keyCache}
 }
 
-var (
-	rsaPublicKeyBytes     []byte
-	ed25519PublicKeyBytes []byte
-	err                   error
-)
-
 func (s *PlaygroundService) getApplicationDetails(applicationSlug string) (ApplicationDetails, error) {
 
 	applicationDetails := config.LoadApplicationSpecificConfig(applicationSlug)
@@ -63,27 +57,10 @@ func (s *PlaygroundService) getApplicationDetails(applicationSlug string) (Appli
 	// Load keys from cache instead of file
 	// If loading from cache fails then loading keys from the file structure
 
-	// RSA Public Key (Application)
-	rsaPublicKeyBytes = s.keyCache.GetRawRSAPublicKey(applicationDetails.Slug, applicationDetails.RSAPublicKeyPath, applicationDetails.KeyVersion, true)
-	if len(rsaPublicKeyBytes) == 0 {
-		s.logger.Error("Failed to fetch Applications's RSA Public Key from cache.")
-		return ApplicationDetails{}, err
-	}
-
-	rsaPublicKey := s.sanitizePublicKey(string(rsaPublicKeyBytes))
-
-	// ED25519 Public Key (Application)
-	ed25519PublicKeyBytes = s.keyCache.GetRawED25519PublicKey(applicationDetails.Slug, applicationDetails.Ed25519PublicKeyPath, applicationDetails.KeyVersion, true)
-	if len(ed25519PublicKeyBytes) == 0 {
-		s.logger.Error("Failed to fetch Applications's ED25519 Public Key from cache.")
-		return ApplicationDetails{}, err
-	}
-
-	ed25519PublicKey := s.sanitizePublicKey(string(ed25519PublicKeyBytes))
-
+	keys := s.keyCache.GetRawApplicationKeys(applicationDetails.Slug, applicationDetails.RSAPublicKeyPath, applicationDetails.Ed25519PublicKeyPath, applicationDetails.KeyVersion, true)
 	return ApplicationDetails{
-		RSAPublicKey:     rsaPublicKey,
-		Ed25519PublicKey: ed25519PublicKey,
+		RSAPublicKey:     s.sanitizePublicKey(string(keys.RSAPublicKey)),
+		Ed25519PublicKey: s.sanitizePublicKey(string(keys.EDPublicKey)),
 		KeyVersion:       applicationDetails.KeyVersion,
 		Slug:             applicationSlug,
 	}, nil
