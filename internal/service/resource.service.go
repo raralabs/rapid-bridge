@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
 	"rapid-bridge/constants"
 	"rapid-bridge/domain/port"
 	"rapid-bridge/domain/security"
@@ -34,33 +33,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	// Load keys from cache instead of file
 	// If loading from cache fails then loading keys from the file structure
 
-	// RSA Private Key (Application)
-	rsaPrivateKey := r.keyCache.GetRSAPrivateKey(from, keyVersion, true)
-	if rsaPrivateKey == nil {
-		r.logger.Error("Failed to fetch Application's RSA Private Key.")
-		return application.ResourceResponse{}, fmt.Errorf("Failed to fetch Application's RSA Private Key from cache.")
-	}
-
-	// ED25519 Private Key (Application)
-	ed25519PrivateKey := r.keyCache.GetEd25519PrivateKey(from, keyVersion, true)
-	if ed25519PrivateKey == nil {
-		r.logger.Error("Failed to fetch Application's ED25519 Private Key from cache.")
-		return application.ResourceResponse{}, fmt.Errorf("Failed to fetch Application's ED25519 Private Key from cache.")
-	}
-
-	// RSA Public Key (Bank)
-	bankRsaPublicKey := r.keyCache.GetRSAPublicKey(to, keyVersion, false)
-	if bankRsaPublicKey == nil {
-		r.logger.Error("Failed to fetch Bank's RSA Public Key from cache.")
-		return application.ResourceResponse{}, fmt.Errorf("Failed to fetch Bank's RSA Public Key from cache.")
-	}
-
-	// ED25519 Public Key (Bank)
-	bankEdPublicKey := r.keyCache.GetEd25519PublicKey(to, keyVersion, false)
-	if bankEdPublicKey == nil {
-		r.logger.Error("Failed to fetch Bank's EDD25519 Public Key from cache.")
-		return application.ResourceResponse{}, fmt.Errorf("Failed to fetch Bank's EDD25519 Public Key from cache.")
-	}
+	keys := r.keyCache.GetKeys(from, to, keyVersion)
 
 	// convert request struct to bytes
 	data, err := json.Marshal(request)
@@ -69,14 +42,14 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 		return application.ResourceResponse{}, err
 	}
 
-	ciphertext, encryptedAESKey, nonce, err := r.security.Encrypt(data, bankRsaPublicKey)
+	ciphertext, encryptedAESKey, nonce, err := r.security.Encrypt(data, keys.BankKeys.RSAPublicKey)
 	if err != nil {
 		r.logger.Error("Failed to encrypt payload", zap.String("error", err.Error()))
 		return application.ResourceResponse{}, err
 	}
 
 	// sign payload
-	signature, err := r.security.CreateDigitalSignature(ed25519PrivateKey, ciphertext, encryptedAESKey, nonce)
+	signature, err := r.security.CreateDigitalSignature(keys.ApplicationKeys.EDPrivateKey, ciphertext, encryptedAESKey, nonce)
 
 	// create base64 encrypted payload
 	base64EncryptedPayload, err := r.security.CreateBase64Encrypted(ciphertext, encryptedAESKey, nonce)
@@ -117,14 +90,14 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	}
 
 	// decrypt payload
-	decryptedPayload, err := r.security.Decrypt(rsaPrivateKey, ciphertext, encryptedAESKey, nonce)
+	decryptedPayload, err := r.security.Decrypt(keys.ApplicationKeys.RSAPrivateKey, ciphertext, encryptedAESKey, nonce)
 	if err != nil {
 		r.logger.Error("Failed to decrypt payload", zap.String("error", err.Error()))
 		return application.ResourceResponse{}, err
 	}
 
 	// verify signature
-	err = r.security.VerifyDigitalSignature(message, signature, bankEdPublicKey)
+	err = r.security.VerifyDigitalSignature(message, signature, keys.BankKeys.EDPublicKey)
 	if err != nil {
 		r.logger.Error("Failed to verify digital signature", zap.String("error", err.Error()))
 		return application.ResourceResponse{}, err

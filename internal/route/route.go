@@ -28,7 +28,7 @@ func SetupRoutes(e *echo.Echo, app *setup.Application) {
 	keyConverter := keymanagementfs.NewFSKeyConverter()
 	keySaver := keymanagementfs.NewFSKeySaver()
 	keyService := service.NewKeyService(keyLoader, keyConverter, keySaver, nil, cliApp.Logger, cliApp.Config)
-	playgroundService := service.NewPlaygroundService(cliApp.Logger, cliApp, keyLoader, keyConverter, keySaver, keyService, cliApp.KeyCache)
+	playgroundService := service.NewPlaygroundService(cliApp.Logger, cliApp, keyLoader, keyConverter, keySaver, keyService, app.KeyCache)
 	playgroundHandler := handler.NewPlaygroundHandler(cliApp.Logger, playgroundService)
 	api.POST("/application/register", playgroundHandler.HandleApplicationRegister)
 
