@@ -2,3 +2,66 @@
 .env
 _rapid_bridge_data/
 rapid-bridge
+
+.idea/.gitignore
+.idea/go.imports.xml
+.idea/modules.xml
+.idea/rapid-bridge.iml
+.idea/vcs.xml
+
+# Go binaries
+*.exe
+*.test
+*.out
+
+# Go vendor dependencies
+/vendor/
+
+# Go coverage files
+*.coverprofile
+
+# VS Code files
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/shelf/
+.idea/sonarlint/
+.idea/httpRequests/
+.idea/runConfigurations/
+*.log
+*.hprof
+/build/
+/dist/
+/.gradle/
+/.m2/
+/target/
+/node_modules/
+/venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+/site/
+*.swp
+*~
+*.bak
+*.tmp
+*.DS_Store
+
+keys/
+
+
+#Mac Debug file
+cmd/server/__debug*
+
+.idea
+/keys/*
+
+_pg_data

@@ -28,10 +28,11 @@ type PlaygroundService struct {
 	keyConverter port.KeyConverter
 	keySaver     port.KeySaver
 	keyService   *KeyService
+	keyCache     port.KeyCache
 }
 
-func NewPlaygroundService(logger port.Logger, app *setup.CLIApplication, keyLoader port.KeyLoader, keyConverter port.KeyConverter, keySaver port.KeySaver, keyService *KeyService) *PlaygroundService {
-	return &PlaygroundService{logger: logger, app: app, keyLoader: keyLoader, keyConverter: keyConverter, keySaver: keySaver, keyService: keyService}
+func NewPlaygroundService(logger port.Logger, app *setup.CLIApplication, keyLoader port.KeyLoader, keyConverter port.KeyConverter, keySaver port.KeySaver, keyService *KeyService, keyCache port.KeyCache) *PlaygroundService {
+	return &PlaygroundService{logger: logger, app: app, keyLoader: keyLoader, keyConverter: keyConverter, keySaver: keySaver, keyService: keyService, keyCache: keyCache}
 }
 
 func (s *PlaygroundService) getApplicationDetails(applicationSlug string) (ApplicationDetails, error) {
@@ -53,25 +54,13 @@ func (s *PlaygroundService) getApplicationDetails(applicationSlug string) (Appli
 	// 	return ApplicationDetails{}, err
 	// }
 
-	rsaPublicKeyBytes, err := util.ReadFile(applicationDetails.RSAPublicKeyPath)
-	if err != nil {
-		s.logger.Error("Failed to read RSA public keys", zap.String("error", err.Error()))
-		return ApplicationDetails{}, err
-	}
+	// Load keys from cache instead of file
+	// If loading from cache fails then loading keys from the file structure
 
-	rsaPublicKey := s.sanitizePublicKey(string(rsaPublicKeyBytes))
-
-	ed25519PublicKeyBytes, err := util.ReadFile(applicationDetails.Ed25519PublicKeyPath)
-	if err != nil {
-		s.logger.Error("Failed to read ED25519 public keys", zap.String("error", err.Error()))
-		return ApplicationDetails{}, err
-	}
-
-	ed25519PublicKey := s.sanitizePublicKey(string(ed25519PublicKeyBytes))
-
+	keys := s.keyCache.GetRawApplicationKeys(applicationDetails.Slug, applicationDetails.RSAPublicKeyPath, applicationDetails.Ed25519PublicKeyPath, applicationDetails.KeyVersion, true)
 	return ApplicationDetails{
-		RSAPublicKey:     rsaPublicKey,
-		Ed25519PublicKey: ed25519PublicKey,
+		RSAPublicKey:     s.sanitizePublicKey(string(keys.RSAPublicKey)),
+		Ed25519PublicKey: s.sanitizePublicKey(string(keys.EDPublicKey)),
 		KeyVersion:       applicationDetails.KeyVersion,
 		Slug:             applicationSlug,
 	}, nil
