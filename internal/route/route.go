@@ -28,7 +28,7 @@ func SetupRoutes(e *echo.Echo, app *setup.Application) {
 	keyConverter := keymanagementfs.NewFSKeyConverter()
 	keySaver := keymanagementfs.NewFSKeySaver()
 	keyService := service.NewKeyService(keyLoader, keyConverter, keySaver, nil, cliApp.Logger, cliApp.Config)
-	playgroundService := service.NewPlaygroundService(cliApp.Logger, cliApp, keyLoader, keyConverter, keySaver, keyService)
+	playgroundService := service.NewPlaygroundService(cliApp.Logger, cliApp, keyLoader, keyConverter, keySaver, keyService, app.KeyCache)
 	playgroundHandler := handler.NewPlaygroundHandler(cliApp.Logger, playgroundService)
 	api.POST("/application/register", playgroundHandler.HandleApplicationRegister)
 
@@ -41,7 +41,7 @@ func resourceForwardingRoutes(resourceRoutes *echo.Group, app *setup.Application
 
 	keyLoader := keymanagementfs.NewFSKeyLoader()
 
-	service := service.NewRapidResourceService(keyLoader, *newSecurity, app.Logger, app.Config)
+	service := service.NewRapidResourceService(keyLoader, *newSecurity, app.Logger, app.Config, app.KeyCache)
 	handler := handler.NewRapidResourceHandler(app.Logger, service)
 
 	resourceRoutes.POST("/balance", handler.HandleResource)

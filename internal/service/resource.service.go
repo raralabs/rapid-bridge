@@ -1,8 +1,6 @@
 package service
 
 import (
-	"crypto/ed25519"
-	"crypto/rsa"
 	"encoding/json"
 	"rapid-bridge/constants"
 	"rapid-bridge/domain/port"
@@ -21,6 +19,7 @@ type RapidResourceService struct {
 	security security.Security
 	logger   port.Logger
 	config   port.ServerConfig
+	keyCache port.KeyCache
 }
 
 func (r *RapidResourceService) HandleResource(c echo.Context, request application.ResourceRequest) (application.ResourceResponse, error) {
@@ -30,49 +29,10 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	to := ctx.Value(constants.To).(string)
 	keyVersion := ctx.Value(constants.KeyVersion).(string)
 
-	// Load RSA private key
-	rsaPrivateKeyPath := util.GetRSAPrivateKeyPath(from, keyVersion)
-	rsaPrivateKey, err := r.loader.LoadPrivateKey(rsaPrivateKeyPath)
-	if err != nil {
-		r.logger.Error("Failed to read RSA private key", zap.String("error", err.Error()))
-		return application.ResourceResponse{
-			StatusCode:   500,
-			ErrorMessage: "Failed to load RSA private key: " + err.Error(),
-			Message:      "",
-		}, err
-	}
+	// Load keys from cache instead of file
+	// If loading from cache fails then loading keys from the file structure
 
-	// Load Ed25519 private key
-	ed25519PrivateKey, err := r.loader.LoadPrivateKey(util.GetEd25519PrivateKeyPath(from, keyVersion))
-	if err != nil {
-		r.logger.Error("Failed to read Ed25519 private key", zap.String("error", err.Error()))
-		return application.ResourceResponse{
-			StatusCode:   500,
-			ErrorMessage: "Failed to load Ed25519 private key: " + err.Error(),
-			Message:      "",
-		}, err
-	}
-
-	// Load bank public keys
-	bankRsaPublicKey, err := r.loader.LoadPublicKey(util.GetBankRSAPublicKeyPath(to))
-	if err != nil {
-		r.logger.Error("Failed to read bank RSA public key", zap.String("error", err.Error()))
-		return application.ResourceResponse{
-			StatusCode:   500,
-			ErrorMessage: "Failed to load bank RSA public key: " + err.Error(),
-			Message:      "",
-		}, err
-	}
-
-	bankEdPublicKey, err := r.loader.LoadPublicKey(util.GetBankEd25519PublicKeyPath(to))
-	if err != nil {
-		r.logger.Error("Failed to read bank Ed25519 public key", zap.String("error", err.Error()))
-		return application.ResourceResponse{
-			StatusCode:   500,
-			ErrorMessage: "Failed to load bank Ed25519 public key: " + err.Error(),
-			Message:      "",
-		}, err
-	}
+	keys := r.keyCache.GetKeys(from, to, keyVersion)
 
 	// Marshal request into JSON
 	data, err := json.Marshal(request)
@@ -86,7 +46,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	}
 
 	// Encrypt payload
-	ciphertext, encryptedAESKey, nonce, err := r.security.Encrypt(data, bankRsaPublicKey.(*rsa.PublicKey))
+	ciphertext, encryptedAESKey, nonce, err := r.security.Encrypt(data, keys.BankKeys.RSAPublicKey)
 	if err != nil {
 		r.logger.Error("Failed to encrypt payload", zap.String("error", err.Error()))
 		return application.ResourceResponse{
@@ -97,7 +57,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	}
 
 	// Sign payload
-	signature, err := r.security.CreateDigitalSignature(ed25519PrivateKey.(ed25519.PrivateKey), ciphertext, encryptedAESKey, nonce)
+	signature, err := r.security.CreateDigitalSignature(keys.ApplicationKeys.EDPrivateKey, ciphertext, encryptedAESKey, nonce)
 	if err != nil {
 		r.logger.Error("Failed to create digital signature", zap.String("error", err.Error()))
 		return application.ResourceResponse{
@@ -142,7 +102,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	if !rapidResourceResponse.EncryptedFlag {
 		// Check status code from Rapid Links
 		if rapidResourceResponse.StatusCode != 200 {
-			r.logger.Error("Rapid Links returned error", zap.Int("status_code", rapidResourceResponse.StatusCode))
+			r.logger.Error("Rapid Links returned error`", zap.Int("status_code", rapidResourceResponse.StatusCode))
 			return application.ResourceResponse{
 				StatusCode:   rapidResourceResponse.StatusCode,
 				ErrorMessage: string(rapidResourceResponse.GetMessage()),
@@ -156,7 +116,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	message := rapidResourceResponse.GetMessage()
 	signature = rapidResourceResponse.GetSignature()
 
-	r.logger.Info("Message from Rapid Links", zap.String("from", from), zap.String("to", to))
+	r.logger.Info("Successfully called to Rapid", zap.String("URL", rapidLinksUrl+c.Request().URL.Path), zap.String("Source Slug", rapidResourceRequest.From), zap.String("Destination Slug", rapidResourceRequest.To), zap.String("Key Version", rapidResourceRequest.KeyVersion))
 
 	// Decode base64 encrypted message
 	ciphertext, encryptedAESKey, nonce, err = r.security.DecodeBase64Encrypted(message)
@@ -170,7 +130,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	}
 
 	// Decrypt payload
-	decryptedPayload, err := r.security.Decrypt(rsaPrivateKey.(*rsa.PrivateKey), ciphertext, encryptedAESKey, nonce)
+	decryptedPayload, err := r.security.Decrypt(keys.ApplicationKeys.RSAPrivateKey, ciphertext, encryptedAESKey, nonce)
 	if err != nil {
 		r.logger.Error("Failed to decrypt payload", zap.String("error", err.Error()))
 		return application.ResourceResponse{
@@ -181,7 +141,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	}
 
 	// Verify digital signature
-	err = r.security.VerifyDigitalSignature(message, signature, bankEdPublicKey.(ed25519.PublicKey))
+	err = r.security.VerifyDigitalSignature(message, signature, keys.BankKeys.EDPublicKey)
 	if err != nil {
 		r.logger.Error("Failed to verify digital signature", zap.String("error", err.Error()))
 		return application.ResourceResponse{
@@ -209,11 +169,12 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	}, nil
 }
 
-func NewRapidResourceService(keyLoader port.KeyLoader, security security.Security, logger port.Logger, config port.ServerConfig) *RapidResourceService {
+func NewRapidResourceService(keyLoader port.KeyLoader, security security.Security, logger port.Logger, config port.ServerConfig, keyCache port.KeyCache) *RapidResourceService {
 	return &RapidResourceService{
 		loader:   keyLoader,
 		security: security,
 		logger:   logger,
 		config:   config,
+		keyCache: keyCache,
 	}
 }

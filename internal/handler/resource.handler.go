@@ -42,7 +42,7 @@ func (r *resourceHandler) HandleResource(c echo.Context) error {
 	var data map[string]interface{}
 	err = json.Unmarshal([]byte(response.Message), &data)
 	if err != nil {
-		r.logger.Error("Failed to unmarshal request", zap.String("error", err.Error()))
+		r.logger.Error("Failed to unmarshal response", zap.String("error", err.Error()))
 		return err
 	}
 
