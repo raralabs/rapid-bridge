@@ -1,12 +1,14 @@
 package server
 
 import (
-	"go.uber.org/zap"
 	"net/http"
+	customErr "rapid-bridge/internal/error"
 	"rapid-bridge/internal/route"
 	"rapid-bridge/internal/setup"
 	"rapid-bridge/pkg/config"
 	"rapid-bridge/pkg/util"
+
+	"go.uber.org/zap"
 
 	rmiddleware "rapid-bridge/pkg/middleware"
 
@@ -36,6 +38,18 @@ func StartServer() {
 
 	e := echo.New()
 	e.Validator = util.NewCustomValidator()
+
+	// Custom error handler for RapidLinksError
+	e.HTTPErrorHandler = func(err error, c echo.Context) {
+		if rapidErr, ok := err.(customErr.RapidLinksError); ok {
+			c.JSON(rapidErr.GetStatusCode(), map[string]interface{}{
+				"message": rapidErr.Message,
+				"code":    rapidErr.GetStatusCode(),
+			})
+			return
+		}
+		e.DefaultHTTPErrorHandler(err, c)
+	}
 
 	e.Use(middleware.Secure())
 	e.Use(middleware.RemoveTrailingSlash())

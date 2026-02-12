@@ -62,5 +62,14 @@ func SendRequestToRapidLinks(logger port.Logger, rapidLinksUrl string, urlPath s
 		return response, err
 	}
 
+	response.StatusCode = resp.StatusCode
+
+	encryptedFlag := resp.Header.Get("X-Rapid-Encrypted")
+	if encryptedFlag == "false" {
+		response.EncryptedFlag = false
+	} else {
+		response.EncryptedFlag = true
+	}
+
 	return response, nil
 }

@@ -31,7 +31,12 @@ func (r *resourceHandler) HandleResource(c echo.Context) error {
 	response, err := r.RapidResourceService.HandleResource(c, request)
 	if err != nil {
 		r.logger.Error("Failed to handle resource", zap.String("error", err.Error()))
-		return errors.NewRapidLinksError(err.Error(), 500)
+		return errors.NewRapidLinksError(response.ErrorMessage, response.StatusCode)
+	}
+
+	if response.StatusCode != 200 {
+		r.logger.Error("Failed to handle resource", zap.Int("status_code", response.StatusCode))
+		return errors.NewRapidLinksError(response.ErrorMessage, response.StatusCode)
 	}
 
 	var data map[string]interface{}
