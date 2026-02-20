@@ -39,18 +39,37 @@ func (r *resourceHandler) HandleResource(c echo.Context) error {
 		return errors.NewRapidLinksError(response.ErrorMessage, response.StatusCode)
 	}
 
-	var data map[string]interface{}
-	err = json.Unmarshal([]byte(response.Message), &data)
+	messageVal, err := unmarshalAndUnwrap(response.Message)
 	if err != nil {
 		r.logger.Error("Failed to unmarshal response", zap.String("error", err.Error()))
-		return err
+		return errors.NewRapidLinksError(err.Error(), 500)
 	}
 
-	if err := c.JSON(200, data); err != nil {
+	respBody := map[string]interface{}{
+		"message": messageVal,
+		"code":    response.StatusCode,
+	}
+	if err := c.JSON(response.StatusCode, respBody); err != nil {
 		r.logger.Error("Failed to send response", zap.String("error", err.Error()))
 		return errors.NewRapidLinksError(err.Error(), 500)
 	}
+
 	return nil
+}
+
+func unmarshalAndUnwrap(raw string) (interface{}, error) {
+	var data interface{}
+	if err := json.Unmarshal([]byte(raw), &data); err != nil {
+		return nil, err
+	}
+
+	if m, ok := data.(map[string]interface{}); ok {
+		if inner, exists := m["message"]; exists {
+			return inner, nil
+		}
+	}
+
+	return data, nil
 }
 
 func NewRapidResourceHandler(logger port.Logger, service *service.RapidResourceService) *resourceHandler {
