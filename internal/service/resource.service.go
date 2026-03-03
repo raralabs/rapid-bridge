@@ -99,18 +99,18 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 		}, err
 	}
 
-	if !rapidResourceResponse.EncryptedFlag {
-		// Check status code from Rapid Links
-		if rapidResourceResponse.StatusCode != 200 {
-			r.logger.Error("Rapid Links returned error`", zap.Int("status_code", rapidResourceResponse.StatusCode))
-			return application.ResourceResponse{
-				StatusCode:   rapidResourceResponse.StatusCode,
-				ErrorMessage: string(rapidResourceResponse.GetMessage()),
-				Message:      "",
-			}, nil
-		}
+	// For Unencrypted Response
+	// Check status code from Rapid Links
+	if !(rapidResourceResponse.StatusCode >= 200 && rapidResourceResponse.StatusCode < 300) {
+		r.logger.Error("Rapid Links returned error`", zap.Int("status_code", rapidResourceResponse.StatusCode))
+		return application.ResourceResponse{
+			StatusCode:   rapidResourceResponse.StatusCode,
+			ErrorMessage: string(rapidResourceResponse.GetMessage()),
+			Message:      "",
+		}, nil
 	}
 
+	// For Encrypted Response
 	from = rapidResourceResponse.GetFrom()
 	to = rapidResourceResponse.GetTo()
 	message := rapidResourceResponse.GetMessage()

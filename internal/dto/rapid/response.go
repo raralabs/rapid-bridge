@@ -1,14 +1,13 @@
 package rapid
 
 type RapidResourceResponse struct {
-	From          string `json:"from"`
-	To            string `json:"to"`
-	Message       string `json:"message"`
-	Signature     string `json:"signature"`
-	KeyVersion    string `json:"key_version"`
-	Error         bool   `json:"error"`
-	StatusCode    int    `json:"status_code"`
-	EncryptedFlag bool   `json:"encrypted_flag"`
+	From       string `json:"from"`
+	To         string `json:"to"`
+	Message    string `json:"message"`
+	Signature  string `json:"signature"`
+	KeyVersion string `json:"key_version"`
+	Error      bool   `json:"error"`
+	StatusCode int    `json:"status_code"`
 
 	// Nested data (for second format)
 	Data *struct {
