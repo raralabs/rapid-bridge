@@ -31,21 +31,44 @@ func (r *resourceHandler) HandleResource(c echo.Context) error {
 	response, err := r.RapidResourceService.HandleResource(c, request)
 	if err != nil {
 		r.logger.Error("Failed to handle resource", zap.String("error", err.Error()))
+		return errors.NewRapidLinksError(response.Message, response.StatusCode)
+	}
+
+	if response.StatusCode != 200 {
+		r.logger.Error("Failed to handle resource", zap.Int("status_code", response.StatusCode))
+		return errors.NewRapidLinksError(response.Message, response.StatusCode)
+	}
+
+	messageVal, err := unmarshalAndUnwrap(response.Message)
+	if err != nil {
+		r.logger.Error("Failed to unmarshal response", zap.String("error", err.Error()))
 		return errors.NewRapidLinksError(err.Error(), 500)
 	}
 
-	var data map[string]interface{}
-	err = json.Unmarshal([]byte(response.Message), &data)
-	if err != nil {
-		r.logger.Error("Failed to unmarshal response", zap.String("error", err.Error()))
-		return err
+	respBody := map[string]interface{}{
+		"message": messageVal,
 	}
-
-	if err := c.JSON(200, data); err != nil {
+	if err := c.JSON(response.StatusCode, respBody); err != nil {
 		r.logger.Error("Failed to send response", zap.String("error", err.Error()))
 		return errors.NewRapidLinksError(err.Error(), 500)
 	}
+
 	return nil
+}
+
+func unmarshalAndUnwrap(raw string) (interface{}, error) {
+	var data interface{}
+	if err := json.Unmarshal([]byte(raw), &data); err != nil {
+		return nil, err
+	}
+
+	if m, ok := data.(map[string]interface{}); ok {
+		if inner, exists := m["message"]; exists {
+			return inner, nil
+		}
+	}
+
+	return data, nil
 }
 
 func NewRapidResourceHandler(logger port.Logger, service *service.RapidResourceService) *resourceHandler {

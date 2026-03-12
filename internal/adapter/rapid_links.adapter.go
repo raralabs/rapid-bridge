@@ -60,5 +60,7 @@ func SendRequestToRapidLinks(logger port.Logger, rapidLinksUrl string, urlPath s
 		return response, err
 	}
 
+	response.StatusCode = resp.StatusCode
+
 	return response, nil
 }
