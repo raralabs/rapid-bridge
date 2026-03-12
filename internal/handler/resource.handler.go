@@ -31,12 +31,12 @@ func (r *resourceHandler) HandleResource(c echo.Context) error {
 	response, err := r.RapidResourceService.HandleResource(c, request)
 	if err != nil {
 		r.logger.Error("Failed to handle resource", zap.String("error", err.Error()))
-		return errors.NewRapidLinksError(response.ErrorMessage, response.StatusCode)
+		return errors.NewRapidLinksError(response.Message, response.StatusCode)
 	}
 
 	if response.StatusCode != 200 {
 		r.logger.Error("Failed to handle resource", zap.Int("status_code", response.StatusCode))
-		return errors.NewRapidLinksError(response.ErrorMessage, response.StatusCode)
+		return errors.NewRapidLinksError(response.Message, response.StatusCode)
 	}
 
 	messageVal, err := unmarshalAndUnwrap(response.Message)
@@ -47,7 +47,6 @@ func (r *resourceHandler) HandleResource(c echo.Context) error {
 
 	respBody := map[string]interface{}{
 		"message": messageVal,
-		"code":    response.StatusCode,
 	}
 	if err := c.JSON(response.StatusCode, respBody); err != nil {
 		r.logger.Error("Failed to send response", zap.String("error", err.Error()))

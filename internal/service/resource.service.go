@@ -39,9 +39,8 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	if err != nil {
 		r.logger.Error("Failed to marshal request", zap.String("error", err.Error()))
 		return application.ResourceResponse{
-			StatusCode:   400,
-			ErrorMessage: "Invalid request payload: " + err.Error(),
-			Message:      "",
+			StatusCode: 400,
+			Message:    "Invalid request payload: " + err.Error(),
 		}, err
 	}
 
@@ -50,9 +49,8 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	if err != nil {
 		r.logger.Error("Failed to encrypt payload", zap.String("error", err.Error()))
 		return application.ResourceResponse{
-			StatusCode:   500,
-			ErrorMessage: "Encryption failed: " + err.Error(),
-			Message:      "",
+			StatusCode: 500,
+			Message:    "Encryption failed: " + err.Error(),
 		}, err
 	}
 
@@ -61,9 +59,8 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	if err != nil {
 		r.logger.Error("Failed to create digital signature", zap.String("error", err.Error()))
 		return application.ResourceResponse{
-			StatusCode:   500,
-			ErrorMessage: "Digital signature failed: " + err.Error(),
-			Message:      "",
+			StatusCode: 500,
+			Message:    "Digital signature failed: " + err.Error(),
 		}, err
 	}
 
@@ -72,9 +69,8 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	if err != nil {
 		r.logger.Error("Failed to create base64 encrypted payload", zap.String("error", err.Error()))
 		return application.ResourceResponse{
-			StatusCode:   500,
-			ErrorMessage: "Base64 encryption failed: " + err.Error(),
-			Message:      "",
+			StatusCode: 500,
+			Message:    "Base64 encryption failed: " + err.Error(),
 		}, err
 	}
 
@@ -93,9 +89,8 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	if err != nil {
 		r.logger.Error("Failed to send request to Rapid Links", zap.String("error", err.Error()))
 		return application.ResourceResponse{
-			StatusCode:   502,
-			ErrorMessage: "Failed to communicate with Rapid Links: " + err.Error(),
-			Message:      "",
+			StatusCode: 502,
+			Message:    "Failed to communicate with Rapid Links: " + err.Error(),
 		}, err
 	}
 
@@ -104,9 +99,8 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	if !(rapidResourceResponse.StatusCode >= 200 && rapidResourceResponse.StatusCode < 300) {
 		r.logger.Error("Rapid Links returned error`", zap.Int("status_code", rapidResourceResponse.StatusCode))
 		return application.ResourceResponse{
-			StatusCode:   rapidResourceResponse.StatusCode,
-			ErrorMessage: string(rapidResourceResponse.GetMessage()),
-			Message:      "",
+			StatusCode: rapidResourceResponse.StatusCode,
+			Message:    string(rapidResourceResponse.GetMessage()),
 		}, nil
 	}
 
@@ -123,9 +117,8 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	if err != nil {
 		r.logger.Error("Failed to decode message", zap.String("error", err.Error()))
 		return application.ResourceResponse{
-			StatusCode:   500,
-			ErrorMessage: "Failed to decode message: " + err.Error(),
-			Message:      "",
+			StatusCode: 500,
+			Message:    "Failed to decode message: " + err.Error(),
 		}, err
 	}
 
@@ -134,9 +127,8 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	if err != nil {
 		r.logger.Error("Failed to decrypt payload", zap.String("error", err.Error()))
 		return application.ResourceResponse{
-			StatusCode:   500,
-			ErrorMessage: "Failed to decrypt message: " + err.Error(),
-			Message:      "",
+			StatusCode: 500,
+			Message:    "Failed to decrypt message: " + err.Error(),
 		}, err
 	}
 
@@ -145,28 +137,16 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	if err != nil {
 		r.logger.Error("Failed to verify digital signature", zap.String("error", err.Error()))
 		return application.ResourceResponse{
-			StatusCode:   400,
-			ErrorMessage: "Invalid digital signature: " + err.Error(),
-			Message:      "",
+			StatusCode: 400,
+			Message:    "Invalid digital signature: " + err.Error(),
 		}, err
 	}
 
-	// Check status code from Rapid Links
-	if rapidResourceResponse.StatusCode != 200 {
-		r.logger.Error("Rapid Links returned error", zap.Int("status_code", rapidResourceResponse.StatusCode))
-		return application.ResourceResponse{
-			StatusCode:   rapidResourceResponse.StatusCode,
-			ErrorMessage: string(decryptedPayload),
-			Message:      "",
-		}, nil
-	}
-
-	// Success response
 	return application.ResourceResponse{
-		Message:      string(decryptedPayload),
-		StatusCode:   200,
-		ErrorMessage: "",
+		StatusCode: rapidResourceResponse.StatusCode,
+		Message:    string(decryptedPayload),
 	}, nil
+
 }
 
 func NewRapidResourceService(keyLoader port.KeyLoader, security security.Security, logger port.Logger, config port.ServerConfig, keyCache port.KeyCache) *RapidResourceService {
