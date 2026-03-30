@@ -1,8 +1,6 @@
 package service
 
 import (
-	"crypto/ed25519"
-	"crypto/rsa"
 	"encoding/json"
 	"rapid-bridge/constants"
 	"rapid-bridge/domain/port"
@@ -21,126 +19,142 @@ type RapidResourceService struct {
 	security security.Security
 	logger   port.Logger
 	config   port.ServerConfig
+	keyCache port.KeyCache
 }
 
 func (r *RapidResourceService) HandleResource(c echo.Context, request application.ResourceRequest) (application.ResourceResponse, error) {
-
 	ctx := util.GetReqCtxFromEchoCtx(c)
 
 	from := ctx.Value(constants.From).(string)
 	to := ctx.Value(constants.To).(string)
 	keyVersion := ctx.Value(constants.KeyVersion).(string)
 
-	rsaPrivateKeyPath := util.GetRSAPrivateKeyPath(from, keyVersion)
-	rsaPrivateKey, err := r.loader.LoadPrivateKey(rsaPrivateKeyPath)
+	// Load keys from cache instead of file
+	// If loading from cache fails then loading keys from the file structure
 
-	if err != nil {
-		r.logger.Error("Failed to read private keys", zap.String("error", err.Error()))
-		return application.ResourceResponse{}, err
-	}
+	keys := r.keyCache.GetKeys(from, to, keyVersion)
 
-	ed25519PrivateKey, err := r.loader.LoadPrivateKey(util.GetEd25519PrivateKeyPath(from, keyVersion))
-
-	if err != nil {
-		r.logger.Error("Failed to read private keys", zap.String("error", err.Error()))
-		return application.ResourceResponse{}, err
-	}
-
-	bankRsaPublicKey, err := r.loader.LoadPublicKey(util.GetBankRSAPublicKeyPath(to))
-
-	if err != nil {
-		r.logger.Error("Failed to read public keys", zap.String("error", err.Error()))
-		return application.ResourceResponse{}, err
-	}
-
-	bankEdPublicKey, err := r.loader.LoadPublicKey(util.GetBankEd25519PublicKeyPath(to))
-
-	if err != nil {
-		r.logger.Error("Failed to read public keys", zap.String("error", err.Error()))
-		return application.ResourceResponse{}, err
-	}
-
-	// convert request struct to bytes
+	// Marshal request into JSON
 	data, err := json.Marshal(request)
 	if err != nil {
 		r.logger.Error("Failed to marshal request", zap.String("error", err.Error()))
-		return application.ResourceResponse{}, err
+		return application.ResourceResponse{
+			StatusCode: 400,
+			Message:    "Invalid request payload: " + err.Error(),
+		}, err
 	}
 
-	ciphertext, encryptedAESKey, nonce, err := r.security.Encrypt(data, bankRsaPublicKey.(*rsa.PublicKey))
+	// Encrypt payload
+	ciphertext, encryptedAESKey, nonce, err := r.security.Encrypt(data, keys.BankKeys.RSAPublicKey)
 	if err != nil {
 		r.logger.Error("Failed to encrypt payload", zap.String("error", err.Error()))
-		return application.ResourceResponse{}, err
+		return application.ResourceResponse{
+			StatusCode: 500,
+			Message:    "Encryption failed: " + err.Error(),
+		}, err
 	}
 
-	// sign payload
-	signature, err := r.security.CreateDigitalSignature(ed25519PrivateKey.(ed25519.PrivateKey), ciphertext, encryptedAESKey, nonce)
+	// Sign payload
+	signature, err := r.security.CreateDigitalSignature(keys.ApplicationKeys.EDPrivateKey, ciphertext, encryptedAESKey, nonce)
+	if err != nil {
+		r.logger.Error("Failed to create digital signature", zap.String("error", err.Error()))
+		return application.ResourceResponse{
+			StatusCode: 500,
+			Message:    "Digital signature failed: " + err.Error(),
+		}, err
+	}
 
-	// create base64 encrypted payload
+	// Create base64 encrypted payload
 	base64EncryptedPayload, err := r.security.CreateBase64Encrypted(ciphertext, encryptedAESKey, nonce)
 	if err != nil {
 		r.logger.Error("Failed to create base64 encrypted payload", zap.String("error", err.Error()))
-		return application.ResourceResponse{}, err
+		return application.ResourceResponse{
+			StatusCode: 500,
+			Message:    "Base64 encryption failed: " + err.Error(),
+		}, err
 	}
 
-	// create rapid resource request
+	// Build Rapid resource request
 	rapidResourceRequest := rapid.RapidResourceRequest{
-		From:       ctx.Value(constants.From).(string),
-		To:         ctx.Value(constants.To).(string),
+		From:       from,
+		To:         to,
 		Message:    base64EncryptedPayload,
 		Signature:  signature,
 		KeyVersion: keyVersion,
 	}
 
-	// send rapid resource request to rapid links
+	// Send request to Rapid Links
 	rapidLinksUrl := r.config.GetRapidLinksUrl()
 	rapidResourceResponse, err := adapter.SendRequestToRapidLinks(r.logger, rapidLinksUrl, c.Request().URL.Path, rapidResourceRequest, c.Request().Header)
 	if err != nil {
-		r.logger.Error("Failed to send rapid resource request to rapid links", zap.String("error", err.Error()))
-		return application.ResourceResponse{}, err
+		r.logger.Error("Failed to send request to Rapid Links", zap.String("error", err.Error()))
+		return application.ResourceResponse{
+			StatusCode: 502,
+			Message:    "Failed to communicate with Rapid Links: " + err.Error(),
+		}, err
 	}
 
+	// For Unencrypted Response
+	// Check status code from Rapid Links
+	if !(rapidResourceResponse.StatusCode >= 200 && rapidResourceResponse.StatusCode < 300) {
+		r.logger.Error("Rapid Links returned error`", zap.Int("status_code", rapidResourceResponse.StatusCode))
+		return application.ResourceResponse{
+			StatusCode: rapidResourceResponse.StatusCode,
+			Message:    string(rapidResourceResponse.GetMessage()),
+		}, nil
+	}
+
+	// For Encrypted Response
 	from = rapidResourceResponse.GetFrom()
 	to = rapidResourceResponse.GetTo()
 	message := rapidResourceResponse.GetMessage()
 	signature = rapidResourceResponse.GetSignature()
 
-	r.logger.Info("Message from rapid links", zap.String("from", from), zap.String("to", to))
+	r.logger.Info("Successfully called to Rapid", zap.String("URL", rapidLinksUrl+c.Request().URL.Path), zap.String("Source Slug", rapidResourceRequest.From), zap.String("Destination Slug", rapidResourceRequest.To), zap.String("Key Version", rapidResourceRequest.KeyVersion))
 
-	// decode message and get ciphertext, encrypted aes key and nonce
+	// Decode base64 encrypted message
 	ciphertext, encryptedAESKey, nonce, err = r.security.DecodeBase64Encrypted(message)
 	if err != nil {
 		r.logger.Error("Failed to decode message", zap.String("error", err.Error()))
-		return application.ResourceResponse{}, err
+		return application.ResourceResponse{
+			StatusCode: 500,
+			Message:    "Failed to decode message: " + err.Error(),
+		}, err
 	}
 
-	// decrypt payload
-	decryptedPayload, err := r.security.Decrypt(rsaPrivateKey.(*rsa.PrivateKey), ciphertext, encryptedAESKey, nonce)
+	// Decrypt payload
+	decryptedPayload, err := r.security.Decrypt(keys.ApplicationKeys.RSAPrivateKey, ciphertext, encryptedAESKey, nonce)
 	if err != nil {
 		r.logger.Error("Failed to decrypt payload", zap.String("error", err.Error()))
-		return application.ResourceResponse{}, err
+		return application.ResourceResponse{
+			StatusCode: 500,
+			Message:    "Failed to decrypt message: " + err.Error(),
+		}, err
 	}
 
-	// verify signature
-	err = r.security.VerifyDigitalSignature(message, signature, bankEdPublicKey.(ed25519.PublicKey))
+	// Verify digital signature
+	err = r.security.VerifyDigitalSignature(message, signature, keys.BankKeys.EDPublicKey)
 	if err != nil {
 		r.logger.Error("Failed to verify digital signature", zap.String("error", err.Error()))
-		return application.ResourceResponse{}, err
+		return application.ResourceResponse{
+			StatusCode: 400,
+			Message:    "Invalid digital signature: " + err.Error(),
+		}, err
 	}
 
-	// create rapid resource response
-	applicationResponse := application.ResourceResponse{
-		Message: string(decryptedPayload),
-	}
+	return application.ResourceResponse{
+		StatusCode: rapidResourceResponse.StatusCode,
+		Message:    string(decryptedPayload),
+	}, nil
 
-	return applicationResponse, nil
 }
 
-func NewRapidResourceService(keyLoader port.KeyLoader, security security.Security, logger port.Logger, config port.ServerConfig) *RapidResourceService {
+func NewRapidResourceService(keyLoader port.KeyLoader, security security.Security, logger port.Logger, config port.ServerConfig, keyCache port.KeyCache) *RapidResourceService {
 	return &RapidResourceService{
 		loader:   keyLoader,
 		security: security,
 		logger:   logger,
 		config:   config,
+		keyCache: keyCache,
 	}
 }

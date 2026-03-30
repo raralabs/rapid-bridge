@@ -111,12 +111,17 @@ Initializes a bank configuration.
 
 **Usage:**
 ```bash
-rapid-bridge init bank --slug <bank-slug> --rapidUrl <rapid-url>
+rapid-bridge init bank --slug <bank-slug> --rapidUrl <rapid-url> --rapidAPIUrl <rapid-api-url>
+```
+Example:
+```
+rapid-bridge init bank --slug abcBank --rapidUrl https://portal.bankabc.rapidlinks.io/api/v1 --rapidAPIUrl https://portal.bankabc.rapidlinks.io/connect
 ```
 
 **Required Flags:**
 - `--slug`: The unique identifier for the bank.
-- `--rapidUrl`: The Rapid Bridge service URL.
+- `--rapidUrl`: The Rapid public portal URL.
+- `--rapidAPIUrl`: The Rapid API URL.
 
 **Workflow:**
 1. Checks if the bank is already registered.
@@ -159,7 +164,7 @@ To use the Rapid Bridge CLI, ensure the following environment is set up:
 A `.env` file must be present in the same directory as the `rapid-bridge` executable. This file must contain the `SERVER_PORT` variable, for example:
 
 ```env
-SERVER_PORT=8080
+SERVER_PORT=:8080
 ```
 
 ### _rapid_bridge_data folder

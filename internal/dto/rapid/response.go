@@ -7,6 +7,7 @@ type RapidResourceResponse struct {
 	Signature  string `json:"signature"`
 	KeyVersion string `json:"key_version"`
 	Error      bool   `json:"error"`
+	StatusCode int    `json:"status_code"`
 
 	// Nested data (for second format)
 	Data *struct {
