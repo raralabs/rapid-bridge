@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
 	"rapid-bridge/constants"
 	"rapid-bridge/domain/port"
 	"rapid-bridge/domain/security"
@@ -86,10 +85,6 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 
 	// Send request to Rapid Links
 	rapidLinksUrl := r.config.GetRapidLinksUrl()
-
-	r.logger.Info("Rapid Links headers Start------------------------------------------------------------")
-	r.logger.Info(fmt.Sprintf("%v", c.Request().Header))
-	r.logger.Info("Rapid Links headers End------------------------------------------------------------")
 
 	rapidResourceResponse, err := adapter.SendRequestToRapidLinks(r.logger, rapidLinksUrl, c.Request().URL.Path, rapidResourceRequest, c.Request().Header)
 	if err != nil {

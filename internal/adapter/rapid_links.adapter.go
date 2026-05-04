@@ -3,6 +3,7 @@ package adapter
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"rapid-bridge/domain/port"
@@ -57,6 +58,9 @@ func SendRequestToRapidLinks(logger port.Logger, rapidLinksUrl string, urlPath s
 
 	if err := json.Unmarshal(responseBodyBytes, &response); err != nil {
 		logger.Error("Request send to rapid: Error while unmarshalling the response body", zap.String("error", err.Error()))
+		logger.Info("Response from bank--------------------------------")
+		logger.Info(fmt.Sprintf("%v", string(responseBodyBytes)))
+		logger.Info("--------------------------------")
 		return response, err
 	}
 
