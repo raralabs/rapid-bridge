@@ -35,7 +35,7 @@ func (r *resourceHandler) HandleResource(c echo.Context) error {
 	}
 
 	if response.StatusCode != 200 {
-		r.logger.Error("Failed to handle resource", zap.Int("status_code", response.StatusCode))
+		r.logger.Error("Failed to handle resource", zap.Int("status_code", response.StatusCode), zap.String("message", response.Message))
 		return errors.NewRapidLinksError(response.Message, response.StatusCode)
 	}
 

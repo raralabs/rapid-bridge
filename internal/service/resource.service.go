@@ -97,7 +97,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	// For Unencrypted Response
 	// Check status code from Rapid Links
 	if !(rapidResourceResponse.StatusCode >= 200 && rapidResourceResponse.StatusCode < 300) {
-		r.logger.Error("Rapid Links returned error`", zap.Int("status_code", rapidResourceResponse.StatusCode))
+		r.logger.Error("Rapid Links returned error with Status Code `", zap.Int("status_code", rapidResourceResponse.StatusCode), " and Message `", zap.String("message", string(rapidResourceResponse.GetMessage())), "`")
 		return application.ResourceResponse{
 			StatusCode: rapidResourceResponse.StatusCode,
 			Message:    string(rapidResourceResponse.GetMessage()),
