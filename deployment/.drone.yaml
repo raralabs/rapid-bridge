@@ -92,9 +92,9 @@ server:
   host:
     from_secret: rapidlinks_hostname_be
   user:
-    from_secret: rapidlinks_host_user
+    from_secret: rapidlinks_tigg_be_user
   ssh_key:
-    from_secret: rapidlinks_ssh_key
+    from_secret: rapidlinks_tigg_be_ssh_key
 
 clone:
   disable: true
