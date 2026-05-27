@@ -29,7 +29,6 @@ steps:
 trigger:
   branch:
     - dev
-    - main
   event:
     - push
 
@@ -203,7 +202,7 @@ trigger:
   branch:
     - main
   event:
-    - push
+    - tag
 depends_on:
   - Build and Push to rapid-bridge
 
@@ -245,6 +244,6 @@ trigger:
   branch:
     - main
   event:
-    - push
+    - tag
 depends_on:
   - Build and Push to rapid-bridge
