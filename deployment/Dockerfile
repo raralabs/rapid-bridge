@@ -6,7 +6,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends git
 COPY go.mod ./
 COPY go.sum ./
 
-
 # Add the private key arg
 ARG SSH_PRIVATE_KEY
 RUN git config --global url.ssh://git@github.com/.insteadOf https://github.com/
