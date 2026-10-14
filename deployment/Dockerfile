@@ -3,7 +3,6 @@ FROM golang:1.23.4-bookworm As build
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends git
 
-
 COPY go.mod ./
 COPY go.sum ./
 
