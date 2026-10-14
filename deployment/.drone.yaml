@@ -204,7 +204,7 @@ trigger:
   event:
     - tag
 depends_on:
-  - Build and Push to rapid-bridge
+  - Build and Push to rapid-bridge main  tag 
 
 
 
@@ -246,4 +246,4 @@ trigger:
   event:
     - tag
 depends_on:
-  - Build and Push to rapid-bridge
+  - Build and Push to rapid-bridge main  tag 
