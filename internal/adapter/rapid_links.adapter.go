@@ -56,6 +56,8 @@ func SendRequestToRapidLinks(logger port.Logger, rapidLinksUrl string, urlPath s
 		return response, err
 	}
 
+	logger.Info("Request send to rapid: Response from rapid", zap.ByteString("body", responseBodyBytes))
+
 	if err := json.Unmarshal(responseBodyBytes, &response); err != nil {
 		logger.Error("Request send to rapid: Error while unmarshalling the response body", zap.String("error", err.Error()))
 		logger.Info("Response from bank--------------------------------")
