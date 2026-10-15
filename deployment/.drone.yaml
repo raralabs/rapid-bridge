@@ -78,7 +78,45 @@ volumes:
     host:
       path: /var/run/docker.sock
 
+---
+kind: pipeline
+name: Build and Push to rapid-bridge main 
+type: docker
 
+# platform:
+#   arch: amd64
+#   os: linux
+
+steps:
+  - name: build from rapid-bridge-DEV
+    image: bentolor/docker-dind-awscli:dind
+    environment:
+      github_username:
+        from_secret: GITHUB_USERNAME
+      github_token:
+        from_secret: GITHUB_TOKEN
+      ssh_key:
+        from_secret: rapidDemo_ssh_key
+    commands:
+      - export SSH_PRIVATE_KEY="$ssh_key"
+      - docker compose -f deployment/docker-compose.main.yaml build
+      - docker login ghcr.io -u $github_username -p $github_token
+      - docker compose -f deployment/docker-compose.main.yaml push || true
+
+    volumes:
+      - name: docker_sock
+        path: /var/run/docker.sock
+
+trigger:
+  branch:
+    - main
+  event:
+    - push
+
+volumes:
+  - name: docker_sock
+    host:
+      path: /var/run/docker.sock
 
 
 ---
@@ -202,9 +240,9 @@ trigger:
   branch:
     - main
   event:
-    - tag
+    - push
 depends_on:
-  - Build and Push to rapid-bridge main  tag 
+  - Build and Push to rapid-bridge main 
 
 
 
@@ -244,6 +282,6 @@ trigger:
   branch:
     - main
   event:
-    - tag
+    - push
 depends_on:
-  - Build and Push to rapid-bridge main  tag 
+  - Build and Push to rapid-bridge main 
