@@ -29,11 +29,12 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 	to := ctx.Value(constants.To).(string)
 	keyVersion := ctx.Value(constants.KeyVersion).(string)
 
-	r.logger.Error("Application details for Rapid request",
+	r.logger.Info("Application details for Rapid request",
 		zap.String("source_slug", from),
 		zap.String("destination_slug", to),
 		zap.String("key_version", keyVersion),
-		zap.String("rapid_url", r.config.GetRapidLinksUrl()+c.Request().URL.Path),
+		zap.String("rapid_url", r.config.GetRapidLinksUrl()),
+		zap.String("rapid_url_path", c.Request().URL.Path),
 	)
 
 	// Load keys from cache instead of file
