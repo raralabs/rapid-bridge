@@ -6,6 +6,7 @@ import (
 	"rapid-bridge/domain/port"
 	"rapid-bridge/domain/security"
 	"rapid-bridge/internal/adapter"
+	"rapid-bridge/internal/adapter/config"
 	"rapid-bridge/internal/dto/application"
 	"rapid-bridge/internal/dto/rapid"
 	"rapid-bridge/pkg/util"
@@ -33,7 +34,7 @@ func (r *RapidResourceService) HandleResource(c echo.Context, request applicatio
 		zap.String("source_slug", from),
 		zap.String("destination_slug", to),
 		zap.String("key_version", keyVersion),
-		zap.String("rapid_url", r.config.GetRapidLinksUrl()),
+		zap.String("rapid_url", config.LoadBankSpecificConfig(to).BankRapidAPIUrl),
 		zap.String("rapid_url_path", c.Request().URL.Path),
 	)
 
